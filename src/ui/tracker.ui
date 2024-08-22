@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Tracker</class>
+ <widget class="QWidget" name="Tracker">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>732</width>
+    <height>348</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Consumables Tracker</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDoubleSpinBox { min-height: 31px; min-width: 150px; }
+QSpinBox { min-height: 31px; min-width: 150px; }</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_5">
+   <item row="1" column="0" colspan="2">
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="StrongBodyLabel" name="label_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Lighting</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="StrongBodyLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Ammunition</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QFrame" name="frame_consumables">
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="BodyLabel" name="torchesLabel">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Torches</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="SlotSpinBox" name="n_torches">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="BodyLabel" name="oilFlasksLabel">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Oil flasks</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="SlotSpinBox" name="n_oil_flasks">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="1" rowspan="3">
+       <widget class="QFrame" name="frame_ammunition">
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="4" column="0">
+          <widget class="BodyLabel" name="arrowsLabel_4">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Bullets</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="SlotSpinBox" name="n_needles">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="SlotSpinBox" name="n_darts">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="SlotSpinBox" name="n_daggers">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="BodyLabel" name="arrowsLabel_5">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Needles</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="SlotSpinBox" name="n_bolts">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="SlotSpinBox" name="n_bullets">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="SlotSpinBox" name="n_arrows">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="BodyLabel" name="daggersLabel">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Daggers</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="BodyLabel" name="arrowsLabel_2">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Bolts</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="BodyLabel" name="arrowsLabel">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Arrows</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="BodyLabel" name="arrowsLabel_3">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Darts</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="StrongBodyLabel" name="label_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Nourishment</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QFrame" name="frame_nourishment">
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="3" column="0">
+          <widget class="BodyLabel" name="waterJugLabel">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Jugs (1-gallon)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="SlotSpinBox" name="n_waterskins">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="BodyLabel" name="rationsLabel">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Rations</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="SlotDoubleSpinBox" name="n_rations">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <double>999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.500000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="SlotSpinBox" name="n_jugs">
+           <property name="minimumSize">
+            <size>
+             <width>152</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string> (0 slots)</string>
+           </property>
+           <property name="maximum">
+            <number>999</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="BodyLabel" name="waterWaterskinLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Waterskins (½-gallon)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="TransparentToolButton" name="btn_reset_all">
+     <property name="minimumSize">
+      <size>
+       <width>31</width>
+       <height>31</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Set all tracker inputs to 0</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/icons/fluent-icons/Broom.svg</normaloff>:/icons/fluent-icons/Broom.svg</iconset>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="SubtitleLabel" name="label">
+     <property name="text">
+      <string>Consumables</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>BodyLabel</class>
+   <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>StrongBodyLabel</class>
+   <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>SubtitleLabel</class>
+   <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>TransparentToolButton</class>
+   <extends>QToolButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>SlotSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>dnd_app</header>
+  </customwidget>
+  <customwidget>
+   <class>SlotDoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>dnd_app</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

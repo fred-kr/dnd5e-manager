@@ -1,0 +1,23 @@
+[project]
+name = "dnd-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pyside6>=6.7.2",
+    "attrs>=24.2.0",
+    "numpy>=2.1.0",
+    "pyside6-fluent-widgets>=1.6.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "sourcery>=1.22.0",
+    "pyinstaller>=6.10.0",
+    "pyinstaller-hooks-contrib>=2024.8",
+]
