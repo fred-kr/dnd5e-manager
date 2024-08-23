@@ -15,16 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QHeaderView, QSizePolicy,
-    QSplitter, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHeaderView,
+    QSizePolicy, QSplitter, QTableView, QVBoxLayout,
+    QWidget)
 
-from qfluentwidgets import (CommandBar, SubtitleLabel, TableView)
+from qfluentwidgets import (CommandBar, SubtitleLabel)
 
 class Ui_ItemTables(object):
     def setupUi(self, ItemTables):
         if not ItemTables.objectName():
             ItemTables.setObjectName(u"ItemTables")
-        ItemTables.resize(574, 254)
+        ItemTables.resize(908, 512)
         self.verticalLayout_5 = QVBoxLayout(ItemTables)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.splitter = QSplitter(ItemTables)
@@ -52,8 +53,18 @@ class Ui_ItemTables(object):
 
         self.verticalLayout.addWidget(self.command_bar_inventory)
 
-        self.table_view_inventory = TableView(self.frame_inventory)
+        self.table_view_inventory = QTableView(self.frame_inventory)
         self.table_view_inventory.setObjectName(u"table_view_inventory")
+        self.table_view_inventory.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
+        self.table_view_inventory.setProperty("showDropIndicator", False)
+        self.table_view_inventory.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table_view_inventory.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_view_inventory.setShowGrid(False)
+        self.table_view_inventory.setSortingEnabled(True)
+        self.table_view_inventory.setCornerButtonEnabled(False)
+        self.table_view_inventory.horizontalHeader().setDefaultSectionSize(100)
+        self.table_view_inventory.verticalHeader().setVisible(False)
+        self.table_view_inventory.verticalHeader().setHighlightSections(False)
 
         self.verticalLayout.addWidget(self.table_view_inventory)
 
@@ -83,8 +94,18 @@ class Ui_ItemTables(object):
 
         self.verticalLayout_2.addWidget(self.command_bar_storage)
 
-        self.table_view_storage = TableView(self.frame_storage)
+        self.table_view_storage = QTableView(self.frame_storage)
         self.table_view_storage.setObjectName(u"table_view_storage")
+        self.table_view_storage.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
+        self.table_view_storage.setProperty("showDropIndicator", False)
+        self.table_view_storage.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table_view_storage.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_view_storage.setShowGrid(False)
+        self.table_view_storage.setSortingEnabled(True)
+        self.table_view_storage.setCornerButtonEnabled(False)
+        self.table_view_storage.horizontalHeader().setDefaultSectionSize(100)
+        self.table_view_storage.verticalHeader().setVisible(False)
+        self.table_view_storage.verticalHeader().setHighlightSections(False)
 
         self.verticalLayout_2.addWidget(self.table_view_storage)
 
@@ -108,14 +129,8 @@ class Ui_ItemTables(object):
 #endif // QT_CONFIG(tooltip)
         self.label.setText(QCoreApplication.translate("ItemTables", u"Inventory", None))
 #if QT_CONFIG(tooltip)
-        self.frame_inventory.setToolTip(QCoreApplication.translate("ItemTables", u"<html><head/><body><p>Items that you are currently carrying in your inventory</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
         self.label_2.setToolTip(QCoreApplication.translate("ItemTables", u"<html><head/><body><p>Items that you are not currently carrying</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_2.setText(QCoreApplication.translate("ItemTables", u"Storage", None))
-#if QT_CONFIG(tooltip)
-        self.frame_storage.setToolTip(QCoreApplication.translate("ItemTables", u"<html><head/><body><p>Items that you are not currently carrying</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
     # retranslateUi
 

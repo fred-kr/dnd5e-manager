@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>574</width>
-    <height>254</height>
+    <width>908</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,9 +33,6 @@
        </item>
        <item>
         <widget class="QFrame" name="frame_inventory">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Items that you are currently carrying in your inventory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::Shape::StyledPanel</enum>
          </property>
@@ -54,7 +51,38 @@
            </widget>
           </item>
           <item>
-           <widget class="TableView" name="table_view_inventory"/>
+           <widget class="QTableView" name="table_view_inventory">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::DoubleClicked</set>
+            </property>
+            <property name="showDropIndicator" stdset="0">
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+            </property>
+            <property name="showGrid">
+             <bool>false</bool>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="cornerButtonEnabled">
+             <bool>false</bool>
+            </property>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>100</number>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderHighlightSections">
+             <bool>false</bool>
+            </attribute>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -75,9 +103,6 @@
        </item>
        <item>
         <widget class="QFrame" name="frame_storage">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Items that you are not currently carrying&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::Shape::StyledPanel</enum>
          </property>
@@ -96,7 +121,38 @@
            </widget>
           </item>
           <item>
-           <widget class="TableView" name="table_view_storage"/>
+           <widget class="QTableView" name="table_view_storage">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::DoubleClicked</set>
+            </property>
+            <property name="showDropIndicator" stdset="0">
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+            </property>
+            <property name="showGrid">
+             <bool>false</bool>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="cornerButtonEnabled">
+             <bool>false</bool>
+            </property>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>100</number>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderHighlightSections">
+             <bool>false</bool>
+            </attribute>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -111,11 +167,6 @@
   <customwidget>
    <class>SubtitleLabel</class>
    <extends>QLabel</extends>
-   <header>qfluentwidgets</header>
-  </customwidget>
-  <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>
