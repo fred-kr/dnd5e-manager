@@ -148,7 +148,6 @@ class MSFluentWindow(FramelessWindow):
             self.stackedWidget.currentChanged.connect(self._onCurrentInterfaceChanged)
             self.navigationInterface.setCurrentItem(routeKey)
 
-        # self._updateStackedBackground()
         return item
 
     def switchTo(self, interface: QtWidgets.QWidget) -> None:

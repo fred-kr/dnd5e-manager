@@ -95,7 +95,7 @@ class ItemTablesWidget(QtWidgets.QWidget):
 
     def _setup_actions(self) -> None:
         self.action_add_inventory_item = qfw.Action(Icons.New.icon(), "New Item", self)
-        self.action_add_inventory_item.triggered.connect(self.inventory_model.add_item)
+        self.action_add_inventory_item.triggered.connect(lambda: self.inventory_model.add_item())
 
         self.action_remove_inventory_item = qfw.Action(Icons.Delete.icon(), "Remove Item", self)
         self.action_remove_inventory_item.triggered.connect(
@@ -105,8 +105,11 @@ class ItemTablesWidget(QtWidgets.QWidget):
         self.action_clear_inventory = qfw.Action(Icons.Broom.icon(), "Clear All", self)
         self.action_clear_inventory.triggered.connect(self.inventory_model.clear)
 
+        self.action_move_to_storage = qfw.Action(Icons.ArrowRight.icon(), "Move to Storage", self)
+        self.action_move_to_storage.triggered.connect(self.move_to_storage)
+
         self.action_add_storage_item = qfw.Action(Icons.New.icon(), "New Item", self)
-        self.action_add_storage_item.triggered.connect(self.storage_model.add_item)
+        self.action_add_storage_item.triggered.connect(lambda: self.storage_model.add_item())
 
         self.action_remove_storage_item = qfw.Action(Icons.Delete.icon(), "Remove Item", self)
         self.action_remove_storage_item.triggered.connect(
@@ -116,15 +119,28 @@ class ItemTablesWidget(QtWidgets.QWidget):
         self.action_clear_storage = qfw.Action(Icons.Broom.icon(), "Clear All", self)
         self.action_clear_storage.triggered.connect(self.storage_model.clear)
 
+        self.action_move_to_inventory = qfw.Action(Icons.ArrowLeft.icon(), "Move to Inventory", self)
+        self.action_move_to_inventory.triggered.connect(self.move_to_inventory)
+
     def _setup_command_bars(self) -> None:
         for cb in self.command_bars:
             cb.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.ui.command_bar_inventory.addActions(
-            [self.action_add_inventory_item, self.action_remove_inventory_item, self.action_clear_inventory]
+            [
+                self.action_add_inventory_item,
+                self.action_remove_inventory_item,
+                self.action_clear_inventory,
+                self.action_move_to_storage,
+            ]
         )
         self.ui.command_bar_storage.addActions(
-            [self.action_add_storage_item, self.action_remove_storage_item, self.action_clear_storage]
+            [
+                self.action_add_storage_item,
+                self.action_remove_storage_item,
+                self.action_clear_storage,
+                self.action_move_to_inventory,
+            ]
         )
 
     def refresh_values(self) -> None:
@@ -142,3 +158,17 @@ class ItemTablesWidget(QtWidgets.QWidget):
         storage_items = [Item.from_dict(stor_item) for stor_item in storage_data]
         self.inventory_model.set_items(inventory_items)
         self.storage_model.set_items(storage_items)
+
+    @QtCore.Slot()
+    def move_to_storage(self) -> None:
+        selected_index = self.ui.table_view_inventory.currentIndex()
+        item = self.inventory_model.remove_item(selected_index)
+        if item:
+            self.storage_model.add_item(item)
+
+    @QtCore.Slot()
+    def move_to_inventory(self) -> None:
+        selected_index = self.ui.table_view_storage.currentIndex()
+        item = self.storage_model.remove_item(selected_index)
+        if item:
+            self.inventory_model.add_item(item)

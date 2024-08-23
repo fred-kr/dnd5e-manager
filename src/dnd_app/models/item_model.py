@@ -72,7 +72,8 @@ class ItemTableModel(QtCore.QAbstractTableModel):
                 return item.value
             elif column == 2:
                 return item.weight
-
+        elif role == ItemDataRole.UserRole:
+            return item
         elif role == ItemDataRole.ToolTipRole:
             return item.description
         return None
@@ -143,17 +144,25 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
     @QtCore.Slot(QtCore.QModelIndex)
-    def remove_item(self, index: QtCore.QModelIndex) -> None:
+    def remove_item(self, index: QtCore.QModelIndex) -> Item | None:
         if not index.isValid() or index.row() >= len(self._items):
             return
         self.beginRemoveRows(index.parent(), index.row(), index.row())
-        del self._items[index.row()]
+        item = self._items.pop(index.row())
         self.endRemoveRows()
+        return item
 
     @QtCore.Slot()
-    def add_item(self) -> None:
+    def add_item(self, item: Item | None = None) -> None:
+        if item is None:
+            item = Item(name="New Item")
         self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        self._items.append(Item(name="New Item"))
+        self._items.append(item)
+        self.endInsertRows()
+
+    def insert_item(self, item: Item, row: int) -> None:
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        self._items.insert(row, item)
         self.endInsertRows()
 
     @QtCore.Slot()

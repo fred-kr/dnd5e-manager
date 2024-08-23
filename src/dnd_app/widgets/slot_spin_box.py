@@ -27,7 +27,8 @@ class SlotSpinBox(QtWidgets.QSpinBox):
 
     @QtCore.Slot()
     def update_suffix(self) -> None:
-        self.setSuffix(f" ({self.slots} slots)")
+        slots = self.slots
+        self.setSuffix(f" ({slots} slot{'s' if slots != 1 else ''})")
         self.sig_slots_value_changed.emit()
 
 
@@ -55,5 +56,6 @@ class SlotDoubleSpinBox(QtWidgets.QDoubleSpinBox):
 
     @QtCore.Slot()
     def update_suffix(self) -> None:
-        self.setSuffix(f" ({self.slots} slots)")
+        slots = self.slots
+        self.setSuffix(f" ({self.slots} slot{'s' if slots != 1 else ''})")
         self.sig_slots_value_changed.emit()

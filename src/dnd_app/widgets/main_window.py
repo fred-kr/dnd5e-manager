@@ -3,20 +3,17 @@ import typing as t
 import qfluentwidgets as qfw
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from .ms_fluent_window import MSFluentWindow
-
 from ..config import Config
 from ..icons import Icons
 from ..interfaces.item_tables import ItemTablesWidget
 from ..interfaces.wealth_consumables import WealthConsumablesInterface
-
+from .ms_fluent_window import MSFluentWindow
 
 
 class MainWindow(MSFluentWindow):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
 
-        # self.stackedWidget.view = QtWidgets.QStackedWidget()
         self.wealth_consumables_interface = WealthConsumablesInterface()
         self.item_tables_interface = ItemTablesWidget()
 
@@ -46,17 +43,8 @@ class MainWindow(MSFluentWindow):
 
     def _init_window(self) -> None:
         self.setWindowTitle("DnD5e Equipment Manager")
-        self.setWindowIcon(Icons.AppIcon32.icon())
+        self.setWindowIcon(Icons.Backpack.icon())
         self.command_bar = self.stackedWidget.commandBar
-        # self.command_bar = qfw.CommandBar(self)
-        # self.command_bar.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        # new_layout = QtWidgets.QVBoxLayout()
-        # new_layout.setContentsMargins(0, 0, 0, 0)
-        # new_layout.setSpacing(0)
-        # new_layout.addWidget(self.command_bar)
-        # new_layout.addWidget(self.stackedWidget.view)
-# 
-        # self.stackedWidget.hBoxLayout.addLayout(new_layout)
 
     def addCommand(
         self, icon: qfw.FluentIconBase | QtGui.QIcon | str, text: str, slot: QtCore.Slot | t.Callable[..., None]
