@@ -1,8 +1,8 @@
 import typing as t
 
-if t.TYPE_CHECKING:
-    from PySide6 import QtCore
+from PySide6 import QtCore
 
+type ModelIndex = QtCore.QModelIndex | QtCore.QPersistentModelIndex
 
 class WealthConfigDict(t.TypedDict):
     CoinsGemsPerSlot: int
@@ -58,3 +58,10 @@ class ConsumablesDataDict(t.TypedDict):
     darts: int
     bullets: int
     needles: int
+
+
+class ItemDict(t.TypedDict):
+    name: str
+    weight: float
+    value: float
+    description: str

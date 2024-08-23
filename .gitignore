@@ -164,6 +164,8 @@ cython_debug/
 # Icons
 *.svg
 *.pdf
+*.png
+
 NOTES.md
 
 .vscode/*

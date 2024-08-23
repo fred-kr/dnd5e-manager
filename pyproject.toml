@@ -20,4 +20,29 @@ dev-dependencies = [
     "sourcery>=1.22.0",
     "pyinstaller>=6.10.0",
     "pyinstaller-hooks-contrib>=2024.8",
+    "ipython>=8.26.0",
+    "rich>=13.7.1",
 ]
+
+[tool.ruff]
+target-version = "py312"
+show-fixes = true
+output-format = "concise"
+line-length = 120
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint]
+ignore = ["E501"]
+select = ["E", "F", "B"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[tool.pyright]
+pythonVersion = "3.12"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false

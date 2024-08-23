@@ -1,5 +1,33 @@
 <RCC>
   <qresource prefix="icons">
+    <file>fluent-icons/Backpack.svg</file>
+    <file>fluent-icons/ChartPerson.svg</file>
+    <file>fluent-icons/ContactCard.svg</file>
+    <file>fluent-icons/Home.svg</file>
+    <file>fluent-icons/Person.svg</file>
+    <file>fluent-icons/Savings.svg</file>
+    <file>fluent-icons/SearchInfo.svg</file>
+    <file>fluent-icons/Symbols.svg</file>
+    <file>fluent-icons/Vault.svg</file>
+    <file>fluent-icons/Wallet.svg</file>
+    <file>fluent-icons/ArrowSort.svg</file>
+    <file>fluent-icons/ArrowSortDown.svg</file>
+    <file>fluent-icons/ArrowSortUp.svg</file>
+    <file>fluent-icons/CurrencyDollarEuro.svg</file>
+    <file>fluent-icons/DrinkBeer.svg</file>
+    <file>fluent-icons/Food.svg</file>
+    <file>fluent-icons/Library.svg</file>
+    <file>fluent-icons/Money.svg</file>
+    <file>fluent-icons/Premium.svg</file>
+    <file>fluent-icons/Rename.svg</file>
+    <file>fluent-icons/Star.svg</file>
+    <file>fluent-icons/StarAdd.svg</file>
+    <file>fluent-icons/StarOff.svg</file>
+    <file>fluent-icons/Timer.svg</file>
+    <file>fluent-icons/WeatherSunny.svg</file>
+    <file>AppIcon16.png</file>
+    <file>AppIcon24.png</file>
+    <file>AppIcon32.png</file>
     <file>fluent-icons/LockClosed.svg</file>
     <file>fluent-icons/LockOpen.svg</file>
     <file>fluent-icons/Add.svg</file>
