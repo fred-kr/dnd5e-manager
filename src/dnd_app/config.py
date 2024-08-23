@@ -1,8 +1,8 @@
 import typing as t
 
 import attrs
-from PySide6 import QtCore, QtWidgets
 import qfluentwidgets as qfw
+from PySide6 import QtCore, QtWidgets
 
 from . import type_defs as _t
 
@@ -35,24 +35,26 @@ class _Wealth:
             "path": "Wealth/CoinsGemsPerSlot",
             "ui_name": "Coins/Gems per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of coins/gems that take up one slot."
+            "description": "Amount of coins/gems that take up one slot.",
         },
     )
     GoldPerGem: int = attrs.field(
-        default=50, metadata={
+        default=50,
+        metadata={
             "path": "Wealth/GoldPerGem",
             "ui_name": "Gold per Gem",
             "widget": QtWidgets.QSpinBox,
-            "description": "Value of a single gem in gold (gp)."
-        }
+            "description": "Value of a single gem in gold (gp).",
+        },
     )
     GoldPerPlatinum: int = attrs.field(
-        default=10, metadata={
+        default=10,
+        metadata={
             "path": "Wealth/GoldPerPlatinum",
             "ui_name": "Gold per Platinum",
             "widget": QtWidgets.QSpinBox,
-            "description": "Value of a single platinum in gold (gp)."
-        }
+            "description": "Value of a single platinum in gold (gp).",
+        },
     )
     GoldPerElectrum: float = attrs.field(
         default=0.5,
@@ -61,8 +63,8 @@ class _Wealth:
             "path": "Wealth/GoldPerElectrum",
             "ui_name": "Gold per Electrum",
             "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Value of a single electrum in gold (gp)."
-        }
+            "description": "Value of a single electrum in gold (gp).",
+        },
     )
     GoldPerSilver: float = attrs.field(
         default=0.1,
@@ -71,8 +73,8 @@ class _Wealth:
             "path": "Wealth/GoldPerSilver",
             "ui_name": "Gold per Silver",
             "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Value of a single silver in gold (gp)."
-        }
+            "description": "Value of a single silver in gold (gp).",
+        },
     )
     GoldPerCopper: float = attrs.field(
         default=0.01,
@@ -81,10 +83,9 @@ class _Wealth:
             "path": "Wealth/GoldPerCopper",
             "ui_name": "Gold per Copper",
             "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Value of a single copper in gold (gp)."
-        }
+            "description": "Value of a single copper in gold (gp).",
+        },
     )
-    
 
     def to_dict(self) -> _t.WealthConfigDict:
         return _t.WealthConfigDict(**attrs.asdict(self))
@@ -150,6 +151,7 @@ class _Wealth:
 
         return widget
 
+
 @attrs.define(on_setattr=sync)
 class _Consumables:
     TorchesPerSlot: int = attrs.field(
@@ -158,7 +160,7 @@ class _Consumables:
             "path": "Consumables/TorchesPerSlot",
             "ui_name": "Torches per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of torches that take up one slot."
+            "description": "Amount of torches that take up one slot.",
         },
     )
     OilFlasksPerSlot: int = attrs.field(
@@ -167,7 +169,7 @@ class _Consumables:
             "path": "Consumables/OilFlasksPerSlot",
             "ui_name": "Oil Flasks per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of oil flasks that take up one slot."
+            "description": "Amount of oil flasks that take up one slot.",
         },
     )
     RationsPerSlot: int = attrs.field(
@@ -176,7 +178,7 @@ class _Consumables:
             "path": "Consumables/RationsPerSlot",
             "ui_name": "Rations per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of rations that take up one slot."
+            "description": "Amount of rations that take up one slot.",
         },
     )
     WaterskinsPerSlot: int = attrs.field(
@@ -185,7 +187,7 @@ class _Consumables:
             "path": "Consumables/WaterskinsPerSlot",
             "ui_name": "Waterskins per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of waterskins (\u00BD-gallon) that take up one slot."
+            "description": "Amount of waterskins (\u00bd-gallon) that take up one slot.",
         },
     )
     JugsPerSlot: float = attrs.field(
@@ -195,7 +197,7 @@ class _Consumables:
             "path": "Consumables/JugsPerSlot",
             "ui_name": "Jugs per Slot",
             "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Amount of jugs (1-gallon) that take up one slot."
+            "description": "Amount of jugs (1-gallon) that take up one slot.",
         },
     )
     DaggersPerSlot: int = attrs.field(
@@ -204,7 +206,7 @@ class _Consumables:
             "path": "Consumables/DaggersPerSlot",
             "ui_name": "Daggers per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of daggers that take up one slot."
+            "description": "Amount of daggers that take up one slot.",
         },
     )
     ArrowsPerSlot: int = attrs.field(
@@ -213,7 +215,7 @@ class _Consumables:
             "path": "Consumables/ArrowsPerSlot",
             "ui_name": "Arrows per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of arrows that take up one slot."
+            "description": "Amount of arrows that take up one slot.",
         },
     )
     BoltsPerSlot: int = attrs.field(
@@ -222,7 +224,7 @@ class _Consumables:
             "path": "Consumables/BoltsPerSlot",
             "ui_name": "Bolts per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of bolts that take up one slot."
+            "description": "Amount of bolts that take up one slot.",
         },
     )
     DartsPerSlot: int = attrs.field(
@@ -231,7 +233,7 @@ class _Consumables:
             "path": "Consumables/DartsPerSlot",
             "ui_name": "Darts per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of darts that take up one slot."
+            "description": "Amount of darts that take up one slot.",
         },
     )
     BulletsPerSlot: int = attrs.field(
@@ -240,7 +242,7 @@ class _Consumables:
             "path": "Consumables/BulletsPerSlot",
             "ui_name": "Bullets per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of bullets that take up one slot."
+            "description": "Amount of bullets that take up one slot.",
         },
     )
     NeedlesPerSlot: int = attrs.field(
@@ -249,7 +251,7 @@ class _Consumables:
             "path": "Consumables/NeedlesPerSlot",
             "ui_name": "Needles per Slot",
             "widget": QtWidgets.QSpinBox,
-            "description": "Amount of needles that take up one slot."
+            "description": "Amount of needles that take up one slot.",
         },
     )
 
@@ -321,9 +323,7 @@ class _Consumables:
 
     def create_editor_widget(self) -> QtWidgets.QWidget:
         widget = QtWidgets.QFrame()
-        widget.setFrameStyle(
-            QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised
-        )
+        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
         layout = QtWidgets.QFormLayout()
         widget.setLayout(layout)
 
@@ -380,9 +380,7 @@ class _Armor:
 
     def create_editor_widget(self) -> QtWidgets.QWidget:
         widget = QtWidgets.QFrame()
-        widget.setFrameStyle(
-            QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised
-        )
+        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
         layout = QtWidgets.QFormLayout()
         widget.setLayout(layout)
 
@@ -397,6 +395,7 @@ class _Armor:
             layout.addRow(name, input_widget)
 
         return widget
+
 
 @attrs.define(on_setattr=sync)
 class _InternalConfig:

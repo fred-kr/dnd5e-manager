@@ -2,7 +2,7 @@ import math
 import typing as t
 
 import attrs
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore
 
 from .. import type_defs as _t
 from ..config import Config
@@ -72,7 +72,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
                 return item.value
             elif column == 2:
                 return item.weight
-            
+
         elif role == ItemDataRole.ToolTipRole:
             return item.description
         return None
@@ -84,7 +84,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         role: int = ItemDataRole.DisplayRole,
     ) -> t.Any:
         if role == ItemDataRole.DisplayRole and orientation == QtCore.Qt.Orientation.Horizontal:
-                return self._header[section]
+            return self._header[section]
         return None
 
     def flags(self, index: _t.ModelIndex) -> QtCore.Qt.ItemFlag:

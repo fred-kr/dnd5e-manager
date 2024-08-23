@@ -132,7 +132,6 @@ class MSFluentWindow(FramelessWindow):
         if not interface.objectName():
             raise ValueError("The object name of `interface` can't be an empty string.")
 
-        # interface.setProperty("isStackedTransparent", isTransparent)
         self.stackedWidget.addWidget(interface)
 
         routeKey = interface.objectName()
@@ -158,12 +157,3 @@ class MSFluentWindow(FramelessWindow):
     def _onCurrentInterfaceChanged(self, index: int) -> None:
         widget = self.stackedWidget.widget(index)
         self.navigationInterface.setCurrentItem(widget.objectName())
-        # self._updateStackedBackground()
-
-    # def _updateStackedBackground(self) -> None:
-    #     isTransparent = self.stackedWidget.currentWidget().property("isStackedTransparent")
-    #     if bool(self.stackedWidget.property("isTransparent")) == isTransparent:
-    #         return
-
-    #     self.stackedWidget.setProperty("isTransparent", isTransparent)
-    #     self.stackedWidget.setStyle(QtWidgets.QApplication.style())

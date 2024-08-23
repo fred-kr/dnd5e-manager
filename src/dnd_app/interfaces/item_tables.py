@@ -86,8 +86,10 @@ class ItemTablesWidget(QtWidgets.QWidget):
     def _setup_tables(self) -> None:
         for table in self.tables:
             table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
-            table.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
-                
+            table.horizontalHeader().setDefaultAlignment(
+                QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter
+            )
+
         self.ui.table_view_inventory.setModel(self.inventory_model)
         self.ui.table_view_storage.setModel(self.storage_model)
 

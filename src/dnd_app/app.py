@@ -39,7 +39,12 @@ class EquipmentManager(QtWidgets.QApplication):
             with open(filename, "w") as file:
                 try:
                     json.dump(
-                        {"wealth": wealth_data, "consumables": consumables_data, "inventory": inventory_data, "storage": storage_data},
+                        {
+                            "wealth": wealth_data,
+                            "consumables": consumables_data,
+                            "inventory": inventory_data,
+                            "storage": storage_data,
+                        },
                         file,
                         indent=4,
                     )
@@ -75,10 +80,10 @@ class EquipmentManager(QtWidgets.QApplication):
                     data_consumables = data.get("consumables", {})
                     data_inventory = data.get("inventory", [])
                     data_storage = data.get("storage", [])
-                    
+
                     self.mw.wealth_consumables_interface.set_data((data_wealth, data_consumables))
                     self.mw.item_tables_interface.set_data((data_inventory, data_storage))
-                    
+
                     qfw.InfoBar.success(
                         "Success!",
                         f"Sheet {Path(filename).name} loaded successfully",
