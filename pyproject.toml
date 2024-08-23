@@ -24,6 +24,8 @@ dev-dependencies = [
     "rich>=13.7.1",
 ]
 
+[tool.uv.sources]
+
 [tool.ruff]
 target-version = "py312"
 show-fixes = true

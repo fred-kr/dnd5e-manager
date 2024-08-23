@@ -162,13 +162,11 @@ class ItemTablesWidget(QtWidgets.QWidget):
     @QtCore.Slot()
     def move_to_storage(self) -> None:
         selected_index = self.ui.table_view_inventory.currentIndex()
-        item = self.inventory_model.remove_item(selected_index)
-        if item:
+        if item := self.inventory_model.remove_item(selected_index):
             self.storage_model.add_item(item)
 
     @QtCore.Slot()
     def move_to_inventory(self) -> None:
         selected_index = self.ui.table_view_storage.currentIndex()
-        item = self.storage_model.remove_item(selected_index)
-        if item:
+        if item := self.storage_model.remove_item(selected_index):
             self.inventory_model.add_item(item)
