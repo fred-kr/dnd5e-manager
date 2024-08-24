@@ -4,6 +4,19 @@ from PySide6 import QtCore
 
 type ModelIndex = QtCore.QModelIndex | QtCore.QPersistentModelIndex
 
+
+class CharacterConfigDict(t.TypedDict):
+    Name: str
+    Race: str
+    Class: str
+    Level: int
+    Strength: int
+    Dexterity: int
+    Constitution: int
+    Intelligence: int
+    Wisdom: int
+    Charisma: int
+    
 class WealthConfigDict(t.TypedDict):
     CoinsGemsPerSlot: int
     GoldPerGem: int

@@ -9,6 +9,7 @@ dependencies = [
     "attrs>=24.2.0",
     "numpy>=2.1.0",
     "pyside6-fluent-widgets>=1.6.2",
+    "requests>=2.32.3",
 ]
 
 [build-system]

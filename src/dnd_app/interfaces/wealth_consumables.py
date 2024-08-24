@@ -15,7 +15,7 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
         super().__init__(parent)
         self.setObjectName("wealth_consumables_interface")
         self.setContentsMargins(0, 0, 0, 0)
-        
+
         self.ui = Ui_WealthConsumablesTracker()
         self.ui.setupUi(self)
         self.layout().setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading)
@@ -119,9 +119,7 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
         gp_copper = n_copper * w_conf.GoldPerCopper
 
         self.ui.n_total.setValue(n_total)
-        self.update_wealth_gp(
-            gp_gems, gp_platinum, gp_gold, gp_electrum, gp_silver, gp_copper
-        )
+        self.update_wealth_gp(gp_gems, gp_platinum, gp_gold, gp_electrum, gp_silver, gp_copper)
 
     def update_wealth_gp(
         self,
@@ -139,9 +137,7 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
         self.ui.gp_silver.setValue(gp_silver)
         self.ui.gp_copper.setValue(gp_copper)
 
-        self.ui.gp_total.setValue(
-            gp_gems + gp_platinum + gp_gold + gp_electrum + gp_silver + gp_copper
-        )
+        self.ui.gp_total.setValue(gp_gems + gp_platinum + gp_gold + gp_electrum + gp_silver + gp_copper)
 
     def refresh_consumables(self) -> None:
         self.set_amount_per_slot()

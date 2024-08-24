@@ -108,6 +108,9 @@ class ItemTablesWidget(QtWidgets.QWidget):
         self.action_move_to_storage = qfw.Action(Icons.ArrowRight.icon(), "Move to Storage", self)
         self.action_move_to_storage.triggered.connect(self.move_to_storage)
 
+        self.action_edit_inventory_item = qfw.Action(Icons.CircleEdit.icon(), "Edit Details", self)
+        self.action_edit_inventory_item.triggered.connect(self.edit_inventory_item)
+
         self.action_add_storage_item = qfw.Action(Icons.New.icon(), "New Item", self)
         self.action_add_storage_item.triggered.connect(lambda: self.storage_model.add_item())
 
@@ -121,6 +124,9 @@ class ItemTablesWidget(QtWidgets.QWidget):
 
         self.action_move_to_inventory = qfw.Action(Icons.ArrowLeft.icon(), "Move to Inventory", self)
         self.action_move_to_inventory.triggered.connect(self.move_to_inventory)
+
+        self.action_edit_storage_item = qfw.Action(Icons.CircleEdit.icon(), "Edit Details", self)
+        self.action_edit_storage_item.triggered.connect(self.edit_storage_item)
 
     def _setup_command_bars(self) -> None:
         for cb in self.command_bars:
@@ -170,3 +176,25 @@ class ItemTablesWidget(QtWidgets.QWidget):
         selected_index = self.ui.table_view_storage.currentIndex()
         if item := self.storage_model.remove_item(selected_index):
             self.inventory_model.add_item(item)
+
+    @QtCore.Slot()
+    def edit_inventory_item(self) -> None:
+        selected_index = self.ui.table_view_inventory.currentIndex()
+        item = self.inventory_model.data(selected_index, ItemDataRole.UserRole)
+        new_description, ok = QtWidgets.QInputDialog.getText(
+            self, "Edit Item", "Enter a new description:", text=item.description
+        )
+        if ok:
+            item.description = new_description
+            self.inventory_model.layoutChanged.emit()
+
+    @QtCore.Slot()
+    def edit_storage_item(self) -> None:
+        selected_index = self.ui.table_view_storage.currentIndex()
+        item = self.storage_model.data(selected_index, ItemDataRole.UserRole)
+        new_description, ok = QtWidgets.QInputDialog.getText(
+            self, "Edit Item", "Enter a new description:", text=item.description
+        )
+        if ok:
+            item.description = new_description
+            self.storage_model.layoutChanged.emit()

@@ -27,6 +27,181 @@ def sync[T](inst: attrs.AttrsInstance, attr: t.Any, value: T) -> T:
     return value
 
 
+def _stat_validator(inst: attrs.AttrsInstance, attr: t.Any, value: int) -> None:
+    if not 1 <= value <= 20:
+        raise ValueError("Stat values must be between 1 and 20.")
+
+
+@attrs.define(on_setattr=sync)
+class _Character:
+    Name: str = attrs.field(
+        default="",
+        metadata={
+            "path": "Character/Name",
+            "ui_name": "Character Name",
+            "widget": QtWidgets.QLineEdit,
+            "description": "Your character's name.",
+        },
+    )
+    Race: str = attrs.field(
+        default="",
+        metadata={
+            "path": "Character/Race",
+            "ui_name": "Race",
+            "widget": QtWidgets.QLineEdit,
+            "description": "Your character's race.",
+        },
+    )
+    Class: str = attrs.field(
+        default="",
+        metadata={
+            "path": "Character/Class",
+            "ui_name": "Class",
+            "widget": QtWidgets.QLineEdit,
+            "description": "Your character's class.",
+        },
+    )
+    Level: int = attrs.field(
+        default=1,
+        metadata={
+            "path": "Character/Level",
+            "ui_name": "Level",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's level.",
+        },
+    )
+    Strength: int = attrs.field(
+        default=10,
+        validator=_stat_validator,
+        metadata={
+            "path": "Character/Strength",
+            "ui_name": "Strength",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's strength score, used for calculating encumbrance. See the 'Info' page for more details.",
+        },
+    )
+    Dexterity: int = attrs.field(
+        default=10,
+        validator=_stat_validator,
+        metadata={
+            "path": "Character/Dexterity",
+            "ui_name": "Dexterity",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's dexterity score.",
+        },
+    )
+    Constitution: int = attrs.field(
+        default=10,
+        validator=_stat_validator,
+        metadata={
+            "path": "Character/Constitution",
+            "ui_name": "Constitution",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's constitution score.",
+        },
+    )
+    Intelligence: int = attrs.field(
+        default=10,
+        validator=_stat_validator,
+        metadata={
+            "path": "Character/Intelligence",
+            "ui_name": "Intelligence",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's intelligence score.",
+        },
+    )
+    Wisdom: int = attrs.field(
+        default=10,
+        validator=_stat_validator,
+        metadata={
+            "path": "Character/Wisdom",
+            "ui_name": "Wisdom",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's wisdom score.",
+        },
+    )
+    Charisma: int = attrs.field(
+        default=10,
+        validator=_stat_validator,
+        metadata={
+            "path": "Character/Charisma",
+            "ui_name": "Charisma",
+            "widget": QtWidgets.QSpinBox,
+            "description": "Your character's charisma score.",
+        },
+    )
+
+    def to_dict(self) -> _t.CharacterConfigDict:
+        return _t.CharacterConfigDict(**attrs.asdict(self))
+
+    @classmethod
+    def from_qsettings(cls) -> "_Character":
+        settings = QtCore.QSettings()
+        settings.beginGroup("Character")
+        name = settings.value("Name", "", type=str)
+        race = settings.value("Race", "", type=str)
+        char_class = settings.value("Class", "", type=str)
+        level = settings.value("Level", 1, type=int)
+        strength = settings.value("Strength", 10, type=int)
+        dexterity = settings.value("Dexterity", 10, type=int)
+        constitution = settings.value("Constitution", 10, type=int)
+        intelligence = settings.value("Intelligence", 10, type=int)
+        wisdom = settings.value("Wisdom", 10, type=int)
+        charisma = settings.value("Charisma", 10, type=int)
+        settings.endGroup()
+        return cls(
+            Name=name,  # type: ignore
+            Race=race,  # type: ignore
+            Class=char_class,  # type: ignore
+            Level=level,  # type: ignore
+            Strength=strength,  # type: ignore
+            Dexterity=dexterity,  # type: ignore
+            Constitution=constitution,  # type: ignore
+            Intelligence=intelligence,  # type: ignore
+            Wisdom=wisdom,  # type: ignore
+            Charisma=charisma,  # type: ignore
+        )
+
+    def save(self) -> None:
+        settings = QtCore.QSettings()
+        settings.beginGroup("Character")
+        for attr in attrs.fields(self.__class__):
+            settings.setValue(attr.name, getattr(self, attr.name))
+        settings.endGroup()
+
+        settings.sync()
+
+    def reset(self) -> None:
+        for attr in attrs.fields(self.__class__):
+            setattr(self, attr.name, attr.default)
+        self.save()
+
+    def create_editor_widget(self) -> QtWidgets.QFrame:
+        widget = QtWidgets.QFrame()
+        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
+        layout = QtWidgets.QFormLayout()
+        widget.setLayout(layout)
+
+        for field in attrs.fields(self.__class__):
+            name = field.metadata.get("ui_name", field.name)
+            input_widget = field.metadata.get("widget")()
+            input_widget.setFrame(False)
+            if isinstance(input_widget, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+                input_widget.setRange(1, 20)
+                input_widget.setValue(getattr(self, field.name))
+                input_widget.valueChanged.connect(lambda value, field=field: setattr(self, field.name, value))
+            elif isinstance(input_widget, QtWidgets.QLineEdit):
+                input_widget.setText(getattr(self, field.name))
+                input_widget.textEdited.connect(lambda text, field=field: setattr(self, field.name, text))
+            else:
+                raise ValueError(f"Unsupported widget type: {type(input_widget)}")
+
+            input_widget.setToolTip(field.metadata.get("description", ""))
+            layout.addRow(name, input_widget)
+
+        return widget
+
+
 @attrs.define(on_setattr=sync)
 class _Wealth:
     CoinsGemsPerSlot: int = attrs.field(
@@ -114,23 +289,14 @@ class _Wealth:
     def save(self) -> None:
         settings = QtCore.QSettings()
         settings.beginGroup("Wealth")
-        settings.setValue("CoinsGemsPerSlot", self.CoinsGemsPerSlot)
-        settings.setValue("GoldPerGem", self.GoldPerGem)
-        settings.setValue("GoldPerPlatinum", self.GoldPerPlatinum)
-        settings.setValue("GoldPerElectrum", self.GoldPerElectrum)
-        settings.setValue("GoldPerSilver", self.GoldPerSilver)
-        settings.setValue("GoldPerCopper", self.GoldPerCopper)
+        for attr in attrs.fields(self.__class__):
+            settings.setValue(attr.name, getattr(self, attr.name))
         settings.endGroup()
-
         settings.sync()
 
     def reset(self) -> None:
-        self.CoinsGemsPerSlot = 250
-        self.GoldPerGem = 50
-        self.GoldPerPlatinum = 10
-        self.GoldPerElectrum = 0.5
-        self.GoldPerSilver = 0.1
-        self.GoldPerCopper = 0.01
+        for attr in attrs.fields(self.__class__):
+            setattr(self, attr.name, attr.default)
         self.save()
 
     def create_editor_widget(self) -> QtWidgets.QFrame:
@@ -292,33 +458,15 @@ class _Consumables:
     def save(self) -> None:
         settings = QtCore.QSettings()
         settings.beginGroup("Consumables")
-        settings.setValue("TorchesPerSlot", self.TorchesPerSlot)
-        settings.setValue("OilFlasksPerSlot", self.OilFlasksPerSlot)
-        settings.setValue("RationsPerSlot", self.RationsPerSlot)
-        settings.setValue("WaterskinsPerSlot", self.WaterskinsPerSlot)
-        settings.setValue("JugsPerSlot", self.JugsPerSlot)
-        settings.setValue("DaggersPerSlot", self.DaggersPerSlot)
-        settings.setValue("ArrowsPerSlot", self.ArrowsPerSlot)
-        settings.setValue("BoltsPerSlot", self.BoltsPerSlot)
-        settings.setValue("DartsPerSlot", self.DartsPerSlot)
-        settings.setValue("BulletsPerSlot", self.BulletsPerSlot)
-        settings.setValue("NeedlesPerSlot", self.NeedlesPerSlot)
+        for attr in attrs.fields(self.__class__):
+            settings.setValue(attr.name, getattr(self, attr.name))
         settings.endGroup()
 
         settings.sync()
 
     def reset(self) -> None:
-        self.TorchesPerSlot = 5
-        self.OilFlasksPerSlot = 5
-        self.RationsPerSlot = 5
-        self.WaterskinsPerSlot = 1
-        self.JugsPerSlot = 0.5
-        self.DaggersPerSlot = 5
-        self.ArrowsPerSlot = 20
-        self.BoltsPerSlot = 20
-        self.DartsPerSlot = 20
-        self.BulletsPerSlot = 20
-        self.NeedlesPerSlot = 50
+        for attr in attrs.fields(self.__class__):
+            setattr(self, attr.name, attr.default)
         self.save()
 
     def create_editor_widget(self) -> QtWidgets.QWidget:
@@ -369,13 +517,15 @@ class _Armor:
     def save(self) -> None:
         settings = QtCore.QSettings()
         settings.beginGroup("Armor")
-        settings.setValue("PoundsPerSlot", self.PoundsPerSlot)
+        for attr in attrs.fields(self.__class__):
+            settings.setValue(attr.name, getattr(self, attr.name))
         settings.endGroup()
 
         settings.sync()
 
     def reset(self) -> None:
-        self.PoundsPerSlot = 5
+        for attr in attrs.fields(self.__class__):
+            setattr(self, attr.name, attr.default)
         self.save()
 
     def create_editor_widget(self) -> QtWidgets.QWidget:
@@ -432,25 +582,26 @@ class _InternalConfig:
     def save(self) -> None:
         settings = QtCore.QSettings()
         settings.beginGroup("Internal")
-        settings.setValue("InputDir", self.InputDir)
-        settings.setValue("OutputDir", self.OutputDir)
-        settings.setValue("RecentFiles", self.RecentFiles)
-        settings.setValue("WindowGeometry", self.WindowGeometry)
-        settings.setValue("WindowState", self.WindowState)
+        for attr in attrs.fields(self.__class__):
+            settings.setValue(attr.name, getattr(self, attr.name))
         settings.endGroup()
 
         settings.sync()
 
     def reset(self) -> None:
-        self.InputDir = app_dir_posix()
-        self.OutputDir = app_dir_posix()
-        self.RecentFiles.clear()
-        self.WindowGeometry = QtCore.QByteArray()
-        self.WindowState = QtCore.QByteArray()
+        for attr in attrs.fields(self.__class__):
+            setattr(self, attr.name, attr.default)
         self.save()
 
 
 class Config:
+    __slots__ = (
+        "_character_config",
+        "_wealth_config",
+        "_consumables_config",
+        "_armor_config",
+        "_internal_config",
+    )
     _instance: "Config | None" = None
 
     def __new__(cls) -> "Config":
@@ -459,11 +610,16 @@ class Config:
         return cls._instance
 
     def __init__(self) -> None:
+        self._character_config = _Character.from_qsettings()
         self._wealth_config = _Wealth.from_qsettings()
         self._consumables_config = _Consumables.from_qsettings()
         self._armor_config = _Armor.from_qsettings()
         self._internal_config = _InternalConfig.from_qsettings()
         self.save()  # If running for the first time, initializes the settings with default values
+
+    @property
+    def character(self) -> _Character:
+        return self._character_config
 
     @property
     def wealth(self) -> _Wealth:
@@ -485,10 +641,13 @@ class Config:
         if group is None:
             return
         group = group.lower()
-        if group not in {"wealth", "consumables", "armor", "internal"}:
+        if group not in {"character", "wealth", "consumables", "armor", "internal"}:
             return
 
-        if group == "wealth":
+        if group == "character":
+            if hasattr(self._character_config, key):
+                setattr(self._character_config, key, value)
+        elif group == "wealth":
             if hasattr(self._wealth_config, key):
                 setattr(self._wealth_config, key, value)
         elif group == "consumables":
@@ -504,12 +663,14 @@ class Config:
         self.save()
 
     def save(self) -> None:
+        self._character_config.save()
         self._wealth_config.save()
         self._consumables_config.save()
         self._armor_config.save()
         self._internal_config.save()
 
     def reset(self) -> None:
+        self._character_config.reset()
         self._wealth_config.reset()
         self._consumables_config.reset()
         self._armor_config.reset()
@@ -520,21 +681,26 @@ class Config:
         layout = QtWidgets.QGridLayout()
         widget.setLayout(layout)
 
+        character_widget = self._character_config.create_editor_widget()
         wealth_widget = self._wealth_config.create_editor_widget()
         consumables_widget = self._consumables_config.create_editor_widget()
         armor_widget = self._armor_config.create_editor_widget()
 
+        character_label = qfw.SubtitleLabel("Character")
         wealth_label = qfw.SubtitleLabel("Wealth")
         consumables_label = qfw.SubtitleLabel("Consumables")
         armor_label = qfw.SubtitleLabel("Armor")
 
-        layout.addWidget(consumables_label, 0, 0, 1, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(consumables_widget, 1, 0, 3, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(character_label, 0, 0)
+        layout.addWidget(character_widget, 1, 0)
 
-        layout.addWidget(wealth_label, 0, 1, 1, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(wealth_widget, 1, 1, 1, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(wealth_label, 2, 0)
+        layout.addWidget(wealth_widget, 3, 0)
 
-        layout.addWidget(armor_label, 2, 1, 1, 1)
-        layout.addWidget(armor_widget, 3, 1, 1, 1)
+        layout.addWidget(consumables_label, 0, 1)
+        layout.addWidget(consumables_widget, 1, 1)
+
+        layout.addWidget(armor_label, 2, 1)
+        layout.addWidget(armor_widget, 3, 1)
 
         return widget

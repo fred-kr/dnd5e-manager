@@ -20,3 +20,9 @@ class Armor(enum.IntEnum):
 
     def slots(self) -> int:
         return math.ceil(self.value / Config().armor.PoundsPerSlot)
+
+
+class EncumbranceStatus(enum.StrEnum):
+    UNENCUMBERED = "Unencumbered"
+    ENCUMBERED = "Encumbered"
+    HEAVILY_ENCUMBERED = "Heavily encumbered"

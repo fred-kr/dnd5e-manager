@@ -131,11 +131,21 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         column: int,
         order: QtCore.Qt.SortOrder = QtCore.Qt.SortOrder.AscendingOrder,
     ) -> None:
-        column_map = {0: "name", 1: "value", 2: "weight", 3: "slots"}
-        if not self._items or column not in column_map or not 0 <= column < self.columnCount():
+        # column_map = {0: "name", 1: "value", 2: "weight", 3: "slots"}
+        if not self._items or not 0 <= column < self.columnCount():
             return
 
-        attr = column_map[column]
+        if column == 0:
+            attr = "name"
+        elif column == 1:
+            attr = "value"
+        elif column == 2:
+            attr = "weight"
+        elif column == 3:
+            attr = "slots"
+        else:
+            return
+
         self.layoutAboutToBeChanged.emit()
         self._items.sort(
             key=lambda item: getattr(item, attr),

@@ -3,6 +3,8 @@ import typing as t
 import qfluentwidgets as qfw
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from .encumbrance_bar import EncumbranceBar
+
 from ..config import Config
 from ..icons import Icons
 from ..interfaces.item_tables import ItemTablesWidget
@@ -12,7 +14,6 @@ from ..interfaces.wealth_consumables import WealthConsumablesInterface
 class MainWindow(qfw.MSFluentWindow):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        
 
         self.wealth_consumables_interface = WealthConsumablesInterface()
         self.item_tables_interface = ItemTablesWidget()
@@ -46,14 +47,18 @@ class MainWindow(qfw.MSFluentWindow):
         self.setWindowIcon(Icons.Backpack.icon())
         self.command_bar = qfw.CommandBar(self)
         self.command_bar.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        layout_cb_encumbrance = QtWidgets.QHBoxLayout()
+        self.encumbrance_bar = EncumbranceBar(self)
+        layout_cb_encumbrance.addWidget(self.command_bar)
+        layout_cb_encumbrance.addWidget(self.encumbrance_bar)
+        
         vBoxLayout = QtWidgets.QVBoxLayout()
         vBoxLayout.setContentsMargins(0, 0, 0, 0)
         vBoxLayout.setSpacing(0)
-        vBoxLayout.addWidget(self.command_bar)
+        vBoxLayout.addLayout(layout_cb_encumbrance)
         vBoxLayout.addWidget(self.stackedWidget.view)
 
         self.stackedWidget.hBoxLayout.addLayout(vBoxLayout)
-        
 
     def addCommand(
         self, icon: qfw.FluentIconBase | QtGui.QIcon | str, text: str, slot: QtCore.Slot | t.Callable[..., None]
