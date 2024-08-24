@@ -118,7 +118,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.1.0" },
     { name = "pyside6", specifier = ">=6.7.2" },
     { name = "pyside6-fluent-widgets", specifier = ">=1.6.2" },
-    { name = "requests" },
+    { name = "requests", specifier = ">=2.32.3" },
 ]
 
 [package.metadata.requires-dev]

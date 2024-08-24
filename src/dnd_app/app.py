@@ -12,17 +12,25 @@ from .icons import Icons
 from .widgets.main_window import MainWindow
 
 APP_NAME = "DnD5e Equipment Manager"
-VERSION = "v0.2.0-alpha"
+VERSION = "v0.1.0"
 GITHUB_REPO = "fred-kr/dnd-app"
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 
-class Updater(QtCore.QObject):
+class UpdateSignals(QtCore.QObject):
     sig_update_available = QtCore.Signal(str, str)
     sig_update_progress = QtCore.Signal(int)
     sig_update_done = QtCore.Signal()
+    sig_error = QtCore.Signal(str)
 
-    def check_for_update(self) -> None:
+
+class UpdateChecker(QtCore.QRunnable):
+    def __init__(self) -> None:
+        super().__init__()
+        self.signals = UpdateSignals()
+
+    @QtCore.Slot()
+    def run(self) -> None:
         try:
             response = requests.get(GITHUB_API_URL)
             response.raise_for_status()
@@ -32,16 +40,24 @@ class Updater(QtCore.QObject):
             if version.parse(latest_version) > version.parse(VERSION):
                 download_url = release_info["assets"][0]["browser_download_url"]
 
-                self.sig_update_available.emit(latest_version, download_url)
+                self.signals.sig_update_available.emit(latest_version, download_url)
             else:
                 print("No update available")
 
         except Exception as e:
-            print(f"Error checking for update: {e}")
+            self.signals.sig_error.emit(str(e))
 
-    def download_and_install_update(self, download_url: str) -> None:
+
+class UpdateDownloader(QtCore.QRunnable):
+    def __init__(self, download_url: str) -> None:
+        super().__init__()
+        self.download_url = download_url
+        self.signals = UpdateSignals()
+
+    @QtCore.Slot()
+    def run(self) -> None:
         try:
-            response = requests.get(download_url, stream=True)
+            response = requests.get(self.download_url, stream=True)
             response.raise_for_status()
             total_size = int(response.headers.get("content-length", 0))
             block_size = 1024  # 1 KB
@@ -54,14 +70,13 @@ class Updater(QtCore.QObject):
                     downloaded += size
                     progress = int((downloaded / total_size) * 100)
 
-                    self.sig_update_progress.emit(progress)
+                    self.signals.sig_update_progress.emit(progress)
             # Here you would typically close your app and run the updater
             # For demonstration, we'll just print a message
             print(f"Update downloaded to {update_file}. Please run it to complete the update.")
-            self.sig_update_done.emit()
+            self.signals.sig_update_done.emit()
         except Exception as e:
-            print(f"Error downloading update: {e}")
-
+            self.signals.sig_error.emit(str(e))
 
 class EquipmentManager(QtWidgets.QApplication):
     def __init__(self, sys_argv: t.Sequence[str]) -> None:
@@ -73,22 +88,20 @@ class EquipmentManager(QtWidgets.QApplication):
         self.mw = MainWindow()
         self._setup_command_bar()
         self.mw.setWindowTitle(f"{APP_NAME} {VERSION}")
-        self.updater = Updater()
-        self.updater.sig_update_available.connect(self.prompt_update)
-        self.updater.sig_update_progress.connect(self.update_progress_dialog)
-        self.updater.sig_update_done.connect(self.update_complete)
-        self.check_for_update()
-
+        self.thread_pool = QtCore.QThreadPool.globalInstance()
+        self.check_for_updates()
+        
     def _setup_command_bar(self) -> None:
         self.mw.addCommand(Icons.FolderOpen.icon(), "Import Sheet", self.load_sheet)
         self.mw.addCommand(Icons.Save.icon(), "Save Sheet", self.save_sheet)
         self.mw.addCommand(Icons.Settings.icon(), "Settings", self.mw.open_preferences)
 
-    def check_for_update(self) -> None:
-        update_thread = QtCore.QThread()
-        self.updater.moveToThread(update_thread)
-        update_thread.started.connect(self.updater.check_for_update)
-        update_thread.start()
+    def check_for_updates(self) -> None:
+        checker = UpdateChecker()
+        checker.signals.sig_update_available.connect(self.prompt_update)
+        checker.signals.sig_error.connect(self.show_error)
+
+        self.thread_pool.start(checker)
 
     @QtCore.Slot(str, str)
     def prompt_update(self, new_version: str, download_url: str) -> None:
@@ -104,13 +117,14 @@ class EquipmentManager(QtWidgets.QApplication):
     def start_update(self, download_url: str) -> None:
         self.progress_dialog = QtWidgets.QProgressDialog("Downloading update...", "Cancel", 0, 100, self.mw)
         self.progress_dialog.setWindowTitle("Updating")
-        self.progress_dialog.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.progress_dialog.show()
 
-        update_thread = QtCore.QThread()
-        self.updater.moveToThread(update_thread)
-        update_thread.started.connect(lambda: self.updater.download_and_install_update(download_url))
-        update_thread.start()
+        downloader = UpdateDownloader(download_url)
+        downloader.signals.sig_update_progress.connect(self.update_progress_dialog)
+        downloader.signals.sig_update_done.connect(self.update_complete)
+        downloader.signals.sig_error.connect(self.show_error)
+
+        self.thread_pool.start(downloader)
 
     @QtCore.Slot(int)
     def update_progress_dialog(self, progress: int) -> None:
@@ -125,6 +139,10 @@ class EquipmentManager(QtWidgets.QApplication):
             f"{APP_NAME} has been updated. Please restart the application to complete the update.",
         )
 
+    @QtCore.Slot(str)
+    def show_error(self, error: str) -> None:
+        QtWidgets.QMessageBox.critical(self.mw, "Error", error)
+        
     @QtCore.Slot()
     def save_sheet(self) -> None:
         wealth_data, consumables_data = self.mw.wealth_consumables_interface.get_data()
