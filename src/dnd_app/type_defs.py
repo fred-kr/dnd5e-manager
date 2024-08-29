@@ -2,34 +2,44 @@ import typing as t
 
 from PySide6 import QtCore
 
+from .enum_defs import CharacterRace, CreatureSize, EquipmentCategory, ItemWeightFormat
+
+if t.TYPE_CHECKING:
+    from .models.equipment import Cost
+
 type ModelIndex = QtCore.QModelIndex | QtCore.QPersistentModelIndex
 
 
-class CharacterConfigDict(t.TypedDict):
+class ConfigBaseDict(t.TypedDict):
+    pass
+
+class CharacterConfigDict(ConfigBaseDict):
     Name: str
-    Race: str
+    Race: CharacterRace
     Class: str
     Level: int
+    Size: CreatureSize
     Strength: int
     Dexterity: int
     Constitution: int
     Intelligence: int
     Wisdom: int
     Charisma: int
-    
-class WealthConfigDict(t.TypedDict):
+
+
+class EquipmentConfigDict(ConfigBaseDict):
     CoinsGemsPerSlot: int
     GoldPerGem: int
-    GoldPerPlatinum: int
-    GoldPerElectrum: float
-    GoldPerSilver: float
-    GoldPerCopper: float
+    HeavyItemsPoundsPerSlot: int
+    WeightFormat: ItemWeightFormat
 
 
-class ConsumablesConfigDict(t.TypedDict):
+class ConsumablesConfigDict(ConfigBaseDict):
     TorchesPerSlot: int
     OilFlasksPerSlot: int
     RationsPerSlot: int
+    WaterskinsPerSlot: int
+    JugsPerSlot: float
     DaggersPerSlot: int
     ArrowsPerSlot: int
     BoltsPerSlot: int
@@ -38,16 +48,9 @@ class ConsumablesConfigDict(t.TypedDict):
     NeedlesPerSlot: int
 
 
-class ArmorConfigDict(t.TypedDict):
-    PoundsPerSlot: int
-
-
-class InternalConfigDict(t.TypedDict):
-    InputDir: str
-    OutputDir: str
-    RecentFiles: list[str]
+class InternalConfigDict(ConfigBaseDict):
+    SavesDir: str
     WindowGeometry: "QtCore.QByteArray"
-    WindowState: "QtCore.QByteArray"
 
 
 class WealthDataDict(t.TypedDict):
@@ -73,8 +76,29 @@ class ConsumablesDataDict(t.TypedDict):
     needles: int
 
 
+class EquipmentDict(t.TypedDict):
+    category: EquipmentCategory
+    name: str
+    cost: "Cost"
+
+
+class ArmorDict(EquipmentDict):
+    armor_class: int
+    max_dex_bonus: int | None
+    strength_requirement: int | None
+    stealth_disadvantage: bool
+
+
 class ItemDict(t.TypedDict):
     name: str
-    weight: float
+    pounds: float
+    slots: int
     value: float
     description: str
+
+
+class SheetDataDict(t.TypedDict):
+    wealth: WealthDataDict
+    consumables: ConsumablesDataDict
+    inventory: list[ItemDict]
+    storage: list[ItemDict]

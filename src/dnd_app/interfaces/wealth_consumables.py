@@ -2,6 +2,8 @@ import typing as t
 
 from PySide6 import QtCore, QtWidgets
 
+from ..enum_defs import Coin
+
 from ...ui.ui_wealth_consumables_tracker import Ui_WealthConsumablesTracker
 from .. import type_defs as _t
 from ..config import Config
@@ -87,7 +89,7 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
         self.ui.n_bullets.amount_per_slot = conf.consumables.BulletsPerSlot
         self.ui.n_needles.amount_per_slot = conf.consumables.NeedlesPerSlot
 
-        self.ui.n_total.amount_per_slot = conf.wealth.CoinsGemsPerSlot
+        self.ui.n_total.amount_per_slot = conf.equipment.CoinsGemsPerSlot
 
     @QtCore.Slot()
     def clear_wealth(self) -> None:
@@ -110,16 +112,15 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
 
         n_total = n_gems + n_platinum + n_gold + n_electrum + n_silver + n_copper
 
-        w_conf = Config().wealth
-        gp_gems = n_gems * w_conf.GoldPerGem
-        gp_platinum = n_platinum * w_conf.GoldPerPlatinum
+        gp_gems = n_gems * Config().equipment.GoldPerGem
+        gp_platinum = n_platinum * Coin.PLATINUM.gold_exchange_rate
         gp_gold = n_gold
-        gp_electrum = n_electrum * w_conf.GoldPerElectrum
-        gp_silver = n_silver * w_conf.GoldPerSilver
-        gp_copper = n_copper * w_conf.GoldPerCopper
+        gp_electrum = n_electrum * Coin.ELECTRUM.gold_exchange_rate
+        gp_silver = n_silver * Coin.SILVER.gold_exchange_rate
+        gp_copper = n_copper * Coin.COPPER.gold_exchange_rate
 
         self.ui.n_total.setValue(n_total)
-        self.update_wealth_gp(gp_gems, gp_platinum, gp_gold, gp_electrum, gp_silver, gp_copper)
+        self.update_wealth_gp(gp_gems, float(gp_platinum), gp_gold, float(gp_electrum), float(gp_silver), float(gp_copper))
 
     def update_wealth_gp(
         self,
@@ -198,3 +199,6 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
     def refresh_values(self) -> None:
         self.refresh_wealth()
         self.refresh_consumables()
+
+    def get_slots_used(self) -> int:
+        return sum(ssb.slots for ssb in self.slot_spin_boxes)

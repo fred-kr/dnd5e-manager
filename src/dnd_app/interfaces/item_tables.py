@@ -4,7 +4,7 @@ from PySide6 import QtCore, QtWidgets
 from ...ui.ui_item_tables import Ui_ItemTables
 from .. import type_defs as _t
 from ..icons import Icons
-from ..models.item_model import Item, ItemTableModel
+from ..models.item_table_model import Item, ItemTableModel
 
 ItemDataRole = QtCore.Qt.ItemDataRole
 
@@ -55,10 +55,12 @@ class ItemTableDelegate(QtWidgets.QStyledItemDelegate):
     def updateEditorGeometry(
         self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: _t.ModelIndex
     ) -> None:
-        editor.setGeometry(option.rect)
+        editor.setGeometry(option.rect)  # type: ignore
 
 
 class ItemTablesWidget(QtWidgets.QWidget):
+    sig_inventory_slots_changed = QtCore.Signal()
+
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("item_tables_widget")
@@ -92,6 +94,8 @@ class ItemTablesWidget(QtWidgets.QWidget):
 
         self.ui.table_view_inventory.setModel(self.inventory_model)
         self.ui.table_view_storage.setModel(self.storage_model)
+
+        self.inventory_model.dataChanged.connect(lambda: self.sig_inventory_slots_changed.emit())
 
     def _setup_actions(self) -> None:
         self.action_add_inventory_item = qfw.Action(Icons.New.icon(), "New Item", self)
@@ -198,3 +202,6 @@ class ItemTablesWidget(QtWidgets.QWidget):
         if ok:
             item.description = new_description
             self.storage_model.layoutChanged.emit()
+
+    def get_slots_used(self) -> int:
+        return sum(item.slots for item in self.inventory_model.items)

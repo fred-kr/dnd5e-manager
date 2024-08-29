@@ -3,171 +3,94 @@ import typing as t
 from pathlib import Path
 
 import qfluentwidgets as qfw
-import requests
-from packaging import version
 from PySide6 import QtCore, QtWidgets
 
 from .config import Config
 from .icons import Icons
 from .widgets.main_window import MainWindow
+from . import type_defs as _t
 
-APP_NAME = "DnD5e Equipment Manager"
-VERSION = "v0.1.0"
-GITHUB_REPO = "fred-kr/dnd-app"
-GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
-
-
-class UpdateSignals(QtCore.QObject):
-    sig_update_available = QtCore.Signal(str, str)
-    sig_update_progress = QtCore.Signal(int)
-    sig_update_done = QtCore.Signal()
-    sig_error = QtCore.Signal(str)
-
-
-class UpdateChecker(QtCore.QRunnable):
-    def __init__(self) -> None:
-        super().__init__()
-        self.signals = UpdateSignals()
-
-    @QtCore.Slot()
-    def run(self) -> None:
-        try:
-            response = requests.get(GITHUB_API_URL)
-            response.raise_for_status()
-            release_info = json.loads(response.text)
-            latest_version = release_info["tag_name"].lstrip("v")
-
-            if version.parse(latest_version) > version.parse(VERSION):
-                download_url = release_info["assets"][0]["browser_download_url"]
-
-                self.signals.sig_update_available.emit(latest_version, download_url)
-            else:
-                print("No update available")
-
-        except Exception as e:
-            self.signals.sig_error.emit(str(e))
-
-
-class UpdateDownloader(QtCore.QRunnable):
-    def __init__(self, download_url: str) -> None:
-        super().__init__()
-        self.download_url = download_url
-        self.signals = UpdateSignals()
-
-    @QtCore.Slot()
-    def run(self) -> None:
-        try:
-            response = requests.get(self.download_url, stream=True)
-            response.raise_for_status()
-            total_size = int(response.headers.get("content-length", 0))
-            block_size = 1024  # 1 KB
-            downloaded = 0
-
-            update_file = f"{APP_NAME}_update.exe"
-            with open(update_file, "wb") as file:
-                for data in response.iter_content(block_size):
-                    size = file.write(data)
-                    downloaded += size
-                    progress = int((downloaded / total_size) * 100)
-
-                    self.signals.sig_update_progress.emit(progress)
-            # Here you would typically close your app and run the updater
-            # For demonstration, we'll just print a message
-            print(f"Update downloaded to {update_file}. Please run it to complete the update.")
-            self.signals.sig_update_done.emit()
-        except Exception as e:
-            self.signals.sig_error.emit(str(e))
 
 class EquipmentManager(QtWidgets.QApplication):
-    def __init__(self, sys_argv: t.Sequence[str]) -> None:
+    def __init__(self, clean_config: bool, sys_argv: t.Sequence[str]) -> None:
         super().__init__(sys_argv)
-
+    
         self.setOrganizationName("QuackTech")
         self.setApplicationName("DnD5e Equipment Manager")
 
         self.mw = MainWindow()
+        if clean_config:
+            self.mw.reset_config()
         self._setup_command_bar()
-        self.mw.setWindowTitle(f"{APP_NAME} {VERSION}")
-        self.thread_pool = QtCore.QThreadPool.globalInstance()
-        self.check_for_updates()
-        
+        self.mw.setWindowTitle("DnD5e Equipment Manager")
+        self.capacity_exceeded_msg_shown = False
+        self._connect_qsignals()
+
+    def _connect_qsignals(self) -> None:
+        for ssb in self.mw.wealth_consumables_interface.slot_spin_boxes:
+            ssb.sig_slots_value_changed.connect(self.update_slots_used)
+        self.mw.item_tables_interface.sig_inventory_slots_changed.connect(self.update_slots_used)
+        self.mw.encumbrance_bar.sig_capacity_exceeded.connect(self.show_capacity_exceeded_msg)
+
     def _setup_command_bar(self) -> None:
-        self.mw.addCommand(Icons.FolderOpen.icon(), "Import Sheet", self.load_sheet)
+        self.mw.addCommand(Icons.ArrowImport.icon(), "Open Sheet", self.load_sheet)
         self.mw.addCommand(Icons.Save.icon(), "Save Sheet", self.save_sheet)
-        self.mw.addCommand(Icons.Settings.icon(), "Settings", self.mw.open_preferences)
-
-    def check_for_updates(self) -> None:
-        checker = UpdateChecker()
-        checker.signals.sig_update_available.connect(self.prompt_update)
-        checker.signals.sig_error.connect(self.show_error)
-
-        self.thread_pool.start(checker)
-
-    @QtCore.Slot(str, str)
-    def prompt_update(self, new_version: str, download_url: str) -> None:
-        reply = QtWidgets.QMessageBox.question(
-            self.mw,
-            "Update Available",
-            f"A new version ({new_version}) of {APP_NAME} is available. Do you want to download it now?",
-            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-        )
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-            self.start_update(download_url)
-
-    def start_update(self, download_url: str) -> None:
-        self.progress_dialog = QtWidgets.QProgressDialog("Downloading update...", "Cancel", 0, 100, self.mw)
-        self.progress_dialog.setWindowTitle("Updating")
-        self.progress_dialog.show()
-
-        downloader = UpdateDownloader(download_url)
-        downloader.signals.sig_update_progress.connect(self.update_progress_dialog)
-        downloader.signals.sig_update_done.connect(self.update_complete)
-        downloader.signals.sig_error.connect(self.show_error)
-
-        self.thread_pool.start(downloader)
-
-    @QtCore.Slot(int)
-    def update_progress_dialog(self, progress: int) -> None:
-        self.progress_dialog.setValue(progress)
-
-    @QtCore.Slot()
-    def update_complete(self) -> None:
-        self.progress_dialog.close()
-        QtWidgets.QMessageBox.information(
-            self.mw,
-            "Update Complete",
-            f"{APP_NAME} has been updated. Please restart the application to complete the update.",
-        )
+        self.mw.addCommand(Icons.Settings.icon(), "Preferences", self.mw.open_preferences)
+        self.mw.addCommand(Icons.ArrowReset.icon(), "Reset Preferences", self.mw.reset_config, hidden=True)
 
     @QtCore.Slot(str)
     def show_error(self, error: str) -> None:
         QtWidgets.QMessageBox.critical(self.mw, "Error", error)
-        
+
+    @QtCore.Slot()
+    def show_capacity_exceeded_msg(self) -> None:
+        if not self.capacity_exceeded_msg_shown:
+            w = qfw.InfoBar.warning(
+                title="Carrying Capacity Exceeded",
+                content="Looks like you've been hitting the loot a bit too hard. Unless you plan on dragging that mountain of gear behind you, it might be time to reconsider your life choices (or at least your inventory).",
+                orient=QtCore.Qt.Orientation.Vertical,
+                isClosable=True,
+                position=qfw.InfoBarPosition.TOP,
+                duration=-1,
+                parent=self.mw,
+            )
+            chkbx = qfw.CheckBox("Don't show again for this session")
+            chkbx.checkStateChanged.connect(
+                lambda check_state: setattr(
+                    self, "capacity_exceeded_msg_shown", check_state == QtCore.Qt.CheckState.Checked
+                )
+            )
+            w.addWidget(chkbx)
+            w.show()
+
     @QtCore.Slot()
     def save_sheet(self) -> None:
         wealth_data, consumables_data = self.mw.wealth_consumables_interface.get_data()
         inventory_data, storage_data = self.mw.item_tables_interface.get_data()
 
+        sheet_data: _t.SheetDataDict = {
+            "wealth": wealth_data,
+            "consumables": consumables_data,
+            "inventory": inventory_data,
+            "storage": storage_data,
+        }
+
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self.mw,
             "Save Inventory Sheet",
-            dir=Config().internal.OutputDir,
+            dir=Config().internal.SavesDir,
             filter="JSON Files (*.json)",
         )
 
         if filename:
-            Config().internal.OutputDir = Path(filename).parent.as_posix()
+            Config().internal.SavesDir = Path(filename).parent.as_posix()
             with open(filename, "w") as file:
                 try:
                     json.dump(
-                        {
-                            "wealth": wealth_data,
-                            "consumables": consumables_data,
-                            "inventory": inventory_data,
-                            "storage": storage_data,
-                        },
+                        sheet_data,
                         file,
                         indent=4,
+                        sort_keys=True,
                     )
                     qfw.InfoBar.success(
                         "Success!",
@@ -188,12 +111,12 @@ class EquipmentManager(QtWidgets.QApplication):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self.mw,
             "Open Inventory Sheet",
-            dir=Config().internal.OutputDir,
+            dir=Config().internal.SavesDir,
             filter="JSON Files (*.json)",
         )
 
         if filename:
-            Config().internal.OutputDir = Path(filename).parent.as_posix()
+            Config().internal.SavesDir = Path(filename).parent.as_posix()
             with open(filename, "r") as file:
                 try:
                     data = json.load(file)
@@ -210,11 +133,21 @@ class EquipmentManager(QtWidgets.QApplication):
                         f"Sheet {Path(filename).name} loaded successfully",
                         duration=3000,
                         parent=self.mw,
+                        position=qfw.InfoBarPosition.TOP,
                     )
+
                 except Exception as e:
                     qfw.InfoBar.error(
                         "Error!",
                         f"Failed to load sheet: {e}",
                         duration=3000,
                         parent=self.mw,
+                        position=qfw.InfoBarPosition.TOP,
                     )
+
+    @QtCore.Slot()
+    def update_slots_used(self) -> None:
+        wealth_consumables = self.mw.wealth_consumables_interface.get_slots_used()
+        items = self.mw.item_tables_interface.get_slots_used()
+
+        self.mw.encumbrance_bar.update_encumbrance(wealth_consumables + items)

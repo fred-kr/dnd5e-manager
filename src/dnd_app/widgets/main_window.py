@@ -61,11 +61,14 @@ class MainWindow(qfw.MSFluentWindow):
         self.stackedWidget.hBoxLayout.addLayout(vBoxLayout)
 
     def addCommand(
-        self, icon: qfw.FluentIconBase | QtGui.QIcon | str, text: str, slot: QtCore.Slot | t.Callable[..., None]
+        self, icon: qfw.FluentIconBase | QtGui.QIcon | str, text: str, slot: QtCore.Slot | t.Callable[..., None], hidden: bool = False
     ) -> None:
         action = qfw.Action(icon, text, self)
         action.triggered.connect(slot)
-        self.command_bar.addAction(action)
+        if hidden:
+            self.command_bar.addHiddenAction(action)
+        else:
+            self.command_bar.addAction(action)
 
     def refresh_widgets(self) -> None:
         self.wealth_consumables_interface.refresh_values()
@@ -73,7 +76,7 @@ class MainWindow(qfw.MSFluentWindow):
 
     @QtCore.Slot()
     def reset_config(self) -> None:
-        self.config.reset()
+        self.config.clean_and_reset()
         self.refresh_widgets()
         self.open_preferences()
 
@@ -88,7 +91,11 @@ class MainWindow(qfw.MSFluentWindow):
         dlg.setWindowTitle("Preferences")
         dlg.setWindowIcon(Icons.Settings.icon())
         dlg.setStyleSheet(
-            "QSpinBox { min-width: 150px; min-height: 31px; } QDoubleSpinBox { min-width: 150px; min-height: 31px; }"
+            "QSpinBox { min-width: 150px; min-height: 31px; }"
+            "QDoubleSpinBox { min-width: 150px; min-height: 31px; }"
+            "EnumComboBox { min-width: 150px; min-height: 31px; padding-left: 10px; }"
+            "EnumComboBox QAbstractItemView::item { min-height: 31px; }"
+            "QLineEdit { min-width: 150px; min-height: 31px; padding-left: 10px; }"
         )
 
         btn_reset = qfw.PushButton("Restore Defaults")

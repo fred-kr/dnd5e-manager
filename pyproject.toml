@@ -8,8 +8,10 @@ dependencies = [
     "pyside6>=6.7.2",
     "attrs>=24.2.0",
     "numpy>=2.1.0",
-    "pyside6-fluent-widgets>=1.6.2",
+    "pyside6-fluent-widgets>=1.6.3",
     "requests>=2.32.3",
+    "loguru>=0.7.2",
+    "pydantic>=2.8.2",
 ]
 
 [build-system]
@@ -22,7 +24,7 @@ dev-dependencies = [
     "pyinstaller>=6.10.0",
     "pyinstaller-hooks-contrib>=2024.8",
     "ipython>=8.26.0",
-    "rich>=13.7.1",
+    "rich>=13.8.0",
 ]
 
 [tool.uv.sources]

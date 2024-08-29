@@ -1,13 +1,20 @@
+import enum
+import functools
+import inspect
 import typing as t
 
 import attrs
 import qfluentwidgets as qfw
+from attr._make import Factory
 from PySide6 import QtCore, QtWidgets
 
 from . import type_defs as _t
+from .enum_defs import CharacterRace, CreatureSize, ItemWeightFormat, search_enum
+from .widgets.enum_combo_box import EnumComboBox
 
 
-def app_dir_posix() -> str:
+def get_app_dir() -> str:
+    """Get the application's working directory as a posix filepath."""
     app_instance = QtWidgets.QApplication.instance()
     import sys
 
@@ -18,10 +25,19 @@ def app_dir_posix() -> str:
     )
 
 
+def get_saves_dir() -> str:
+    return QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.DocumentsLocation)
+
+
+def get_setting_path(inst_or_cls: attrs.AttrsInstance | t.Type[attrs.AttrsInstance], attr: t.Any) -> str:
+    class_name = inst_or_cls.__name__ if inspect.isclass(inst_or_cls) else inst_or_cls.__class__.__name__
+    return f"{class_name}/{attr.name}"
+
+
 def sync[T](inst: attrs.AttrsInstance, attr: t.Any, value: T) -> T:
-    path = attr.metadata.get("path", None)
+    path = get_setting_path(inst, attr)
     settings = QtCore.QSettings()
-    if path and path in settings.allKeys():
+    if path:
         settings.setValue(path, value)
         settings.sync()
     return value
@@ -32,574 +48,320 @@ def _stat_validator(inst: attrs.AttrsInstance, attr: t.Any, value: int) -> None:
         raise ValueError("Stat values must be between 1 and 20.")
 
 
+class EditorInfo(t.NamedTuple):
+    name: str
+    widget: t.Type[QtWidgets.QLineEdit | QtWidgets.QSpinBox | QtWidgets.QDoubleSpinBox | EnumComboBox]
+    min_max: tuple[int, int] | None = None
+
+
+def _make_editor(attrs_inst: attrs.AttrsInstance) -> QtWidgets.QFrame:
+    container = QtWidgets.QFrame()
+    container.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
+    layout = QtWidgets.QFormLayout()
+    container.setLayout(layout)
+
+    for field in attrs.fields(attrs_inst.__class__):
+        editor_info: EditorInfo | None = field.metadata.get("editor", None)
+        if not editor_info:
+            continue
+
+        widget = editor_info.widget()
+        widget.setFrame(False)
+
+        if isinstance(widget, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+            if editor_info.min_max is not None:
+                widget.setRange(*editor_info.min_max)
+            widget.setValue(getattr(attrs_inst, field.name))
+            widget.valueChanged.connect(lambda value, field=field: setattr(attrs_inst, field.name, value))
+            if isinstance(widget, QtWidgets.QDoubleSpinBox):
+                widget.setDecimals(1)
+                widget.setSingleStep(0.5)
+        elif isinstance(widget, QtWidgets.QLineEdit):
+            widget.setText(getattr(attrs_inst, field.name))
+            widget.textEdited.connect(lambda text, field=field: setattr(attrs_inst, field.name, text))
+        else:
+            widget.set_enum_class(field.type)
+            widget.set_current_enum(getattr(attrs_inst, field.name))
+            widget.sig_current_enum_changed.connect(lambda value, field=field: setattr(attrs_inst, field.name, value))
+
+        widget.installEventFilter(qfw.ToolTipFilter(widget))
+        widget.setToolTip(field.metadata.get("description", ""))
+
+        layout.addRow(editor_info.name, widget)
+
+    return container
+
+
+@attrs.define
+class ConfigBase:
+    def to_dict(self) -> _t.ConfigBaseDict:
+        return _t.ConfigBaseDict(**attrs.asdict(self))
+
+    @classmethod
+    def from_qsettings(cls) -> t.Self:
+        settings = QtCore.QSettings()
+        init_values = {}
+        for field in attrs.fields(cls):
+            path = get_setting_path(cls, field)
+            value = settings.value(path, field.default)
+            if isinstance(value, Factory):
+                value = value.factory()
+            init_values[field.name] = value
+
+        return cls(**init_values)
+
+    def to_qsettings(self) -> None:
+        settings = QtCore.QSettings()
+        for field in attrs.fields(self.__class__):
+            path = get_setting_path(self, field)
+            value = getattr(self, field.name)
+            if isinstance(value, enum.Enum):
+                value = value.name
+            settings.setValue(path, value)
+
+        settings.sync()
+
+    def restore_defaults(self) -> None:
+        for field in attrs.fields(self.__class__):
+            setattr(self, field.name, field.default)
+
+        self.to_qsettings()
+
+    def create_editor(self) -> QtWidgets.QFrame:
+        return _make_editor(self)
+
+
 @attrs.define(on_setattr=sync)
-class _Character:
+class Character(ConfigBase):
     Name: str = attrs.field(
         default="",
         metadata={
-            "path": "Character/Name",
-            "ui_name": "Character Name",
-            "widget": QtWidgets.QLineEdit,
+            "editor": EditorInfo(name="Name of Character", widget=QtWidgets.QLineEdit),
             "description": "Your character's name.",
         },
     )
-    Race: str = attrs.field(
-        default="",
+    Race: CharacterRace = attrs.field(
+        default=CharacterRace.HUMAN,
+        converter=functools.partial(search_enum, enum_class=CharacterRace),
         metadata={
-            "path": "Character/Race",
-            "ui_name": "Race",
-            "widget": QtWidgets.QLineEdit,
+            "editor": EditorInfo(name="Race", widget=EnumComboBox),
             "description": "Your character's race.",
         },
     )
     Class: str = attrs.field(
         default="",
         metadata={
-            "path": "Character/Class",
-            "ui_name": "Class",
-            "widget": QtWidgets.QLineEdit,
+            "editor": EditorInfo(name="Class", widget=QtWidgets.QLineEdit),
             "description": "Your character's class.",
         },
     )
     Level: int = attrs.field(
         default=1,
         metadata={
-            "path": "Character/Level",
-            "ui_name": "Level",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Level", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
             "description": "Your character's level.",
+        },
+    )
+    Size: CreatureSize = attrs.field(
+        default=CreatureSize.MEDIUM,
+        converter=functools.partial(search_enum, enum_class=CreatureSize),
+        metadata={
+            "editor": EditorInfo(name="Size", widget=EnumComboBox),
+            "description": "Your character's size.",
         },
     )
     Strength: int = attrs.field(
         default=10,
         validator=_stat_validator,
         metadata={
-            "path": "Character/Strength",
-            "ui_name": "Strength",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Your character's strength score, used for calculating encumbrance. See the 'Info' page for more details.",
+            "editor": EditorInfo(name="Strength", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
+            "description": "Your character's strength.",
         },
     )
     Dexterity: int = attrs.field(
         default=10,
         validator=_stat_validator,
         metadata={
-            "path": "Character/Dexterity",
-            "ui_name": "Dexterity",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Your character's dexterity score.",
+            "editor": EditorInfo(name="Dexterity", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
+            "description": "Your character's dexterity.",
         },
     )
     Constitution: int = attrs.field(
         default=10,
         validator=_stat_validator,
         metadata={
-            "path": "Character/Constitution",
-            "ui_name": "Constitution",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Your character's constitution score.",
+            "editor": EditorInfo(name="Constitution", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
+            "description": "Your character's constitution.",
         },
     )
     Intelligence: int = attrs.field(
         default=10,
         validator=_stat_validator,
         metadata={
-            "path": "Character/Intelligence",
-            "ui_name": "Intelligence",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Your character's intelligence score.",
+            "editor": EditorInfo(name="Intelligence", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
+            "description": "Your character's intelligence.",
         },
     )
     Wisdom: int = attrs.field(
         default=10,
         validator=_stat_validator,
         metadata={
-            "path": "Character/Wisdom",
-            "ui_name": "Wisdom",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Your character's wisdom score.",
+            "editor": EditorInfo(name="Wisdom", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
+            "description": "Your character's wisdom.",
         },
     )
     Charisma: int = attrs.field(
         default=10,
         validator=_stat_validator,
         metadata={
-            "path": "Character/Charisma",
-            "ui_name": "Charisma",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Your character's charisma score.",
+            "editor": EditorInfo(name="Charisma", widget=QtWidgets.QSpinBox, min_max=(1, 20)),
+            "description": "Your character's charisma.",
         },
     )
 
-    def to_dict(self) -> _t.CharacterConfigDict:
-        return _t.CharacterConfigDict(**attrs.asdict(self))
-
-    @classmethod
-    def from_qsettings(cls) -> "_Character":
-        settings = QtCore.QSettings()
-        settings.beginGroup("Character")
-        name = settings.value("Name", "", type=str)
-        race = settings.value("Race", "", type=str)
-        char_class = settings.value("Class", "", type=str)
-        level = settings.value("Level", 1, type=int)
-        strength = settings.value("Strength", 10, type=int)
-        dexterity = settings.value("Dexterity", 10, type=int)
-        constitution = settings.value("Constitution", 10, type=int)
-        intelligence = settings.value("Intelligence", 10, type=int)
-        wisdom = settings.value("Wisdom", 10, type=int)
-        charisma = settings.value("Charisma", 10, type=int)
-        settings.endGroup()
-        return cls(
-            Name=name,  # type: ignore
-            Race=race,  # type: ignore
-            Class=char_class,  # type: ignore
-            Level=level,  # type: ignore
-            Strength=strength,  # type: ignore
-            Dexterity=dexterity,  # type: ignore
-            Constitution=constitution,  # type: ignore
-            Intelligence=intelligence,  # type: ignore
-            Wisdom=wisdom,  # type: ignore
-            Charisma=charisma,  # type: ignore
-        )
-
-    def save(self) -> None:
-        settings = QtCore.QSettings()
-        settings.beginGroup("Character")
-        for attr in attrs.fields(self.__class__):
-            settings.setValue(attr.name, getattr(self, attr.name))
-        settings.endGroup()
-
-        settings.sync()
-
-    def reset(self) -> None:
-        for attr in attrs.fields(self.__class__):
-            setattr(self, attr.name, attr.default)
-        self.save()
-
-    def create_editor_widget(self) -> QtWidgets.QFrame:
-        widget = QtWidgets.QFrame()
-        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
-        layout = QtWidgets.QFormLayout()
-        widget.setLayout(layout)
-
-        for field in attrs.fields(self.__class__):
-            name = field.metadata.get("ui_name", field.name)
-            input_widget = field.metadata.get("widget")()
-            input_widget.setFrame(False)
-            if isinstance(input_widget, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-                input_widget.setRange(1, 20)
-                input_widget.setValue(getattr(self, field.name))
-                input_widget.valueChanged.connect(lambda value, field=field: setattr(self, field.name, value))
-            elif isinstance(input_widget, QtWidgets.QLineEdit):
-                input_widget.setText(getattr(self, field.name))
-                input_widget.textEdited.connect(lambda text, field=field: setattr(self, field.name, text))
-            else:
-                raise ValueError(f"Unsupported widget type: {type(input_widget)}")
-
-            input_widget.setToolTip(field.metadata.get("description", ""))
-            layout.addRow(name, input_widget)
-
-        return widget
-
 
 @attrs.define(on_setattr=sync)
-class _Wealth:
+class Equipment(ConfigBase):
     CoinsGemsPerSlot: int = attrs.field(
         default=250,
         metadata={
-            "path": "Wealth/CoinsGemsPerSlot",
-            "ui_name": "Coins/Gems per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Coins/Gems per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of coins/gems that take up one slot.",
         },
     )
     GoldPerGem: int = attrs.field(
         default=50,
         metadata={
-            "path": "Wealth/GoldPerGem",
-            "ui_name": "Gold per Gem",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Value of a single gem in gold (gp).",
+            "editor": EditorInfo(name="Gold per Gem", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
+            "description": "Worth of a single gem in gold.",
         },
     )
-    GoldPerPlatinum: int = attrs.field(
-        default=10,
+    HeavyItemsPoundsPerSlot: int = attrs.field(
+        default=5,
         metadata={
-            "path": "Wealth/GoldPerPlatinum",
-            "ui_name": "Gold per Platinum",
-            "widget": QtWidgets.QSpinBox,
-            "description": "Value of a single platinum in gold (gp).",
+            "editor": EditorInfo(name="Pounds per Slot (Heavy Items)", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
+            "description": "For heavy items such as armor and chests, fill one slot per this amount of pounds. Rounds up.",
         },
     )
-    GoldPerElectrum: float = attrs.field(
-        default=0.5,
-        converter=lambda x: round(x, 1),
+    WeightFormat: ItemWeightFormat = attrs.field(
+        default=ItemWeightFormat.SLOTS,
+        converter=functools.partial(search_enum, enum_class=ItemWeightFormat),
         metadata={
-            "path": "Wealth/GoldPerElectrum",
-            "ui_name": "Gold per Electrum",
-            "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Value of a single electrum in gold (gp).",
+            "editor": EditorInfo(name="Weight Format", widget=EnumComboBox),
+            "description": "Switch between displaying an item's weight as 'Slots used' or 'Pounds (lbs)'.",
         },
     )
-    GoldPerSilver: float = attrs.field(
-        default=0.1,
-        converter=lambda x: round(x, 1),
-        metadata={
-            "path": "Wealth/GoldPerSilver",
-            "ui_name": "Gold per Silver",
-            "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Value of a single silver in gold (gp).",
-        },
-    )
-    GoldPerCopper: float = attrs.field(
-        default=0.01,
-        converter=lambda x: round(x, 2),
-        metadata={
-            "path": "Wealth/GoldPerCopper",
-            "ui_name": "Gold per Copper",
-            "widget": QtWidgets.QDoubleSpinBox,
-            "description": "Value of a single copper in gold (gp).",
-        },
-    )
-
-    def to_dict(self) -> _t.WealthConfigDict:
-        return _t.WealthConfigDict(**attrs.asdict(self))
-
-    @classmethod
-    def from_qsettings(cls) -> "_Wealth":
-        settings = QtCore.QSettings()
-        settings.beginGroup("Wealth")
-        coinsgems_value = settings.value("CoinsGemsPerSlot", 250, type=int)
-        gem_value = settings.value("GoldPerGem", 50, type=int)
-        platinum_value = settings.value("GoldPerPlatinum", 10, type=int)
-        electrum_value = settings.value("GoldPerElectrum", 0.5, type=float)
-        silver_value = settings.value("GoldPerSilver", 0.1, type=float)
-        copper_value = settings.value("GoldPerCopper", 0.01, type=float)
-        settings.endGroup()
-
-        return cls(
-            CoinsGemsPerSlot=coinsgems_value,  # type: ignore
-            GoldPerGem=gem_value,  # type: ignore
-            GoldPerPlatinum=platinum_value,  # type: ignore
-            GoldPerElectrum=electrum_value,  # type: ignore
-            GoldPerSilver=silver_value,  # type: ignore
-            GoldPerCopper=copper_value,  # type: ignore
-        )
-
-    def save(self) -> None:
-        settings = QtCore.QSettings()
-        settings.beginGroup("Wealth")
-        for attr in attrs.fields(self.__class__):
-            settings.setValue(attr.name, getattr(self, attr.name))
-        settings.endGroup()
-        settings.sync()
-
-    def reset(self) -> None:
-        for attr in attrs.fields(self.__class__):
-            setattr(self, attr.name, attr.default)
-        self.save()
-
-    def create_editor_widget(self) -> QtWidgets.QFrame:
-        widget = QtWidgets.QFrame()
-        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
-        layout = QtWidgets.QFormLayout()
-        widget.setLayout(layout)
-
-        for field in attrs.fields(self.__class__):
-            name = field.metadata.get("ui_name")
-            input_widget = field.metadata.get("widget")()
-            input_widget.setFrame(False)
-            input_widget.setRange(0, 100_000)
-            input_widget.setValue(getattr(self, field.name))
-            input_widget.setToolTip(field.metadata.get("description", ""))
-            input_widget.valueChanged.connect(lambda value, field=field: setattr(self, field.name, value))
-            layout.addRow(name, input_widget)
-
-        return widget
 
 
 @attrs.define(on_setattr=sync)
-class _Consumables:
+class Consumables(ConfigBase):
     TorchesPerSlot: int = attrs.field(
         default=5,
         metadata={
-            "path": "Consumables/TorchesPerSlot",
-            "ui_name": "Torches per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Torches per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of torches that take up one slot.",
         },
     )
     OilFlasksPerSlot: int = attrs.field(
         default=5,
         metadata={
-            "path": "Consumables/OilFlasksPerSlot",
-            "ui_name": "Oil Flasks per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Oil Flasks per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of oil flasks that take up one slot.",
         },
     )
     RationsPerSlot: int = attrs.field(
         default=5,
         metadata={
-            "path": "Consumables/RationsPerSlot",
-            "ui_name": "Rations per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Rations per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of rations that take up one slot.",
         },
     )
     WaterskinsPerSlot: int = attrs.field(
         default=1,
         metadata={
-            "path": "Consumables/WaterskinsPerSlot",
-            "ui_name": "Waterskins per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Waterskins per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of waterskins (\u00bd-gallon) that take up one slot.",
         },
     )
     JugsPerSlot: float = attrs.field(
         default=0.5,
-        converter=lambda x: round(x, 1),
+        converter=lambda x: round(float(x), 1),
         metadata={
-            "path": "Consumables/JugsPerSlot",
-            "ui_name": "Jugs per Slot",
-            "widget": QtWidgets.QDoubleSpinBox,
+            "editor": EditorInfo(name="Jugs per Slot", widget=QtWidgets.QDoubleSpinBox, min_max=(1, 100_000)),
             "description": "Amount of jugs (1-gallon) that take up one slot.",
         },
     )
     DaggersPerSlot: int = attrs.field(
         default=5,
         metadata={
-            "path": "Consumables/DaggersPerSlot",
-            "ui_name": "Daggers per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Daggers per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of daggers that take up one slot.",
         },
     )
     ArrowsPerSlot: int = attrs.field(
         default=20,
         metadata={
-            "path": "Consumables/ArrowsPerSlot",
-            "ui_name": "Arrows per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Arrows per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of arrows that take up one slot.",
         },
     )
     BoltsPerSlot: int = attrs.field(
         default=20,
         metadata={
-            "path": "Consumables/BoltsPerSlot",
-            "ui_name": "Bolts per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Bolts per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of bolts that take up one slot.",
         },
     )
     DartsPerSlot: int = attrs.field(
         default=20,
         metadata={
-            "path": "Consumables/DartsPerSlot",
-            "ui_name": "Darts per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Darts per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of darts that take up one slot.",
         },
     )
     BulletsPerSlot: int = attrs.field(
         default=20,
         metadata={
-            "path": "Consumables/BulletsPerSlot",
-            "ui_name": "Bullets per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Bullets per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of bullets that take up one slot.",
         },
     )
     NeedlesPerSlot: int = attrs.field(
         default=50,
         metadata={
-            "path": "Consumables/NeedlesPerSlot",
-            "ui_name": "Needles per Slot",
-            "widget": QtWidgets.QSpinBox,
+            "editor": EditorInfo(name="Needles per Slot", widget=QtWidgets.QSpinBox, min_max=(1, 100_000)),
             "description": "Amount of needles that take up one slot.",
         },
     )
 
-    def to_dict(self) -> _t.ConsumablesConfigDict:
-        return _t.ConsumablesConfigDict(**attrs.asdict(self))
-
-    @classmethod
-    def from_qsettings(cls) -> "_Consumables":
-        settings = QtCore.QSettings()
-        settings.beginGroup("Consumables")
-        torch_value = settings.value("TorchesPerSlot", 5, type=int)
-        oilflask_value = settings.value("OilFlasksPerSlot", 5, type=int)
-        rations_value = settings.value("RationsPerSlot", 5, type=int)
-        waterskins_value = settings.value("WaterskinsPerSlot", 1, type=int)
-        jugs_value = settings.value("JugsPerSlot", 0.5, type=float)
-        daggers_value = settings.value("DaggersPerSlot", 5, type=int)
-        arrows_value = settings.value("ArrowsPerSlot", 20, type=int)
-        bolts_value = settings.value("BoltsPerSlot", 20, type=int)
-        darts_value = settings.value("DartsPerSlot", 20, type=int)
-        bullets_value = settings.value("BulletsPerSlot", 20, type=int)
-        needles_value = settings.value("NeedlesPerSlot", 50, type=int)
-        settings.endGroup()
-
-        return cls(
-            TorchesPerSlot=torch_value,  # type: ignore
-            OilFlasksPerSlot=oilflask_value,  # type: ignore
-            RationsPerSlot=rations_value,  # type: ignore
-            WaterskinsPerSlot=waterskins_value,  # type: ignore
-            JugsPerSlot=jugs_value,  # type: ignore
-            DaggersPerSlot=daggers_value,  # type: ignore
-            ArrowsPerSlot=arrows_value,  # type: ignore
-            BoltsPerSlot=bolts_value,  # type: ignore
-            DartsPerSlot=darts_value,  # type: ignore
-            BulletsPerSlot=bullets_value,  # type: ignore
-            NeedlesPerSlot=needles_value,  # type: ignore
-        )
-
-    def save(self) -> None:
-        settings = QtCore.QSettings()
-        settings.beginGroup("Consumables")
-        for attr in attrs.fields(self.__class__):
-            settings.setValue(attr.name, getattr(self, attr.name))
-        settings.endGroup()
-
-        settings.sync()
-
-    def reset(self) -> None:
-        for attr in attrs.fields(self.__class__):
-            setattr(self, attr.name, attr.default)
-        self.save()
-
-    def create_editor_widget(self) -> QtWidgets.QWidget:
-        widget = QtWidgets.QFrame()
-        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
-        layout = QtWidgets.QFormLayout()
-        widget.setLayout(layout)
-
-        for field in attrs.fields(self.__class__):
-            name = field.metadata.get("ui_name")
-            input_widget = field.metadata.get("widget")()
-            input_widget.setFrame(False)
-            input_widget.setRange(0, 100_000)
-            input_widget.setValue(getattr(self, field.name))
-            input_widget.setToolTip(field.metadata.get("description", ""))
-            input_widget.valueChanged.connect(lambda value, field=field: setattr(self, field.name, value))
-            layout.addRow(name, input_widget)
-
-        return widget
-
 
 @attrs.define(on_setattr=sync)
-class _Armor:
-    PoundsPerSlot: int = attrs.field(
-        default=5,
+class Database(ConfigBase):
+    BaseURL: str = attrs.field(
+        default="https://www.dnd5eapi.co/api/",
         metadata={
-            "path": "Armor/PoundsPerSlot",
-            "ui_name": "Pounds (lbs) per Slot",
-            "widget": QtWidgets.QSpinBox,
-            "description": "For heavy items such as armor and chests, fill one slot per this amount of pounds. Rounds up.",
+            "editor": EditorInfo(name="Base URL", widget=QtWidgets.QLineEdit),
+            "description": "The base URL of the API.",
         },
     )
-
-    def to_dict(self) -> _t.ArmorConfigDict:
-        return _t.ArmorConfigDict(**attrs.asdict(self))
-
-    @classmethod
-    def from_qsettings(cls) -> "_Armor":
-        settings = QtCore.QSettings()
-        settings.beginGroup("Armor")
-        pounds_value = settings.value("PoundsPerSlot", 5, type=int)
-        settings.endGroup()
-
-        return cls(
-            PoundsPerSlot=pounds_value,  # type: ignore
-        )
-
-    def save(self) -> None:
-        settings = QtCore.QSettings()
-        settings.beginGroup("Armor")
-        for attr in attrs.fields(self.__class__):
-            settings.setValue(attr.name, getattr(self, attr.name))
-        settings.endGroup()
-
-        settings.sync()
-
-    def reset(self) -> None:
-        for attr in attrs.fields(self.__class__):
-            setattr(self, attr.name, attr.default)
-        self.save()
-
-    def create_editor_widget(self) -> QtWidgets.QWidget:
-        widget = QtWidgets.QFrame()
-        widget.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel | QtWidgets.QFrame.Shadow.Raised)
-        layout = QtWidgets.QFormLayout()
-        widget.setLayout(layout)
-
-        for field in attrs.fields(self.__class__):
-            name = field.metadata.get("ui_name")
-            input_widget = field.metadata.get("widget")()
-            input_widget.setFrame(False)
-            input_widget.setRange(0, 100_000)
-            input_widget.setValue(getattr(self, field.name))
-            input_widget.setToolTip(field.metadata.get("description", ""))
-            input_widget.valueChanged.connect(lambda value, field=field: setattr(self, field.name, value))
-            layout.addRow(name, input_widget)
-
-        return widget
-
+    
 
 @attrs.define(on_setattr=sync)
-class _InternalConfig:
-    InputDir: str = attrs.field(factory=app_dir_posix, metadata={"path": "Internal/InputDir"})
-    OutputDir: str = attrs.field(factory=app_dir_posix, metadata={"path": "Internal/OutputDir"})
-    RecentFiles: list[str] = attrs.field(factory=list, metadata={"path": "Internal/RecentFiles"})
-    WindowGeometry: QtCore.QByteArray = attrs.field(
-        factory=QtCore.QByteArray, metadata={"path": "Internal/WindowGeometry"}
-    )
-    WindowState: QtCore.QByteArray = attrs.field(factory=QtCore.QByteArray, metadata={"path": "Internal/WindowState"})
+class Internal(ConfigBase):
+    SavesDir: str = attrs.field(factory=get_saves_dir)
+    WindowGeometry: QtCore.QByteArray = attrs.field(factory=QtCore.QByteArray)
 
-    def to_dict(self) -> _t.InternalConfigDict:
-        return _t.InternalConfigDict(**attrs.asdict(self))
-
-    @classmethod
-    def from_qsettings(cls) -> "_InternalConfig":
-        settings = QtCore.QSettings()
-        settings.beginGroup("Internal")
-        input_dir = settings.value("InputDir", app_dir_posix(), type=str)
-        output_dir = settings.value("OutputDir", app_dir_posix(), type=str)
-        recent_files = settings.value("RecentFiles", [], type=list)
-        window_geometry = settings.value("WindowGeometry", QtCore.QByteArray(), type=QtCore.QByteArray)
-        window_state = settings.value("WindowState", QtCore.QByteArray(), type=QtCore.QByteArray)
-        settings.endGroup()
-
-        return cls(
-            InputDir=input_dir,  # type: ignore
-            OutputDir=output_dir,  # type: ignore
-            RecentFiles=recent_files,  # type: ignore
-            WindowGeometry=window_geometry,  # type: ignore
-            WindowState=window_state,  # type: ignore
-        )
-
-    def save(self) -> None:
-        settings = QtCore.QSettings()
-        settings.beginGroup("Internal")
-        for attr in attrs.fields(self.__class__):
-            settings.setValue(attr.name, getattr(self, attr.name))
-        settings.endGroup()
-
-        settings.sync()
-
-    def reset(self) -> None:
-        for attr in attrs.fields(self.__class__):
-            setattr(self, attr.name, attr.default)
-        self.save()
+    @t.override
+    def create_editor(self) -> QtWidgets.QFrame:
+        raise NotImplementedError
 
 
 class Config:
     __slots__ = (
         "_character_config",
-        "_wealth_config",
+        "_equipment_config",
         "_consumables_config",
-        "_armor_config",
+        "_database_config",
         "_internal_config",
     )
     _instance: "Config | None" = None
@@ -610,97 +372,106 @@ class Config:
         return cls._instance
 
     def __init__(self) -> None:
-        self._character_config = _Character.from_qsettings()
-        self._wealth_config = _Wealth.from_qsettings()
-        self._consumables_config = _Consumables.from_qsettings()
-        self._armor_config = _Armor.from_qsettings()
-        self._internal_config = _InternalConfig.from_qsettings()
+        self._character_config = Character.from_qsettings()
+        self._equipment_config = Equipment.from_qsettings()
+        self._consumables_config = Consumables.from_qsettings()
+        self._database_config = Database.from_qsettings()
+        self._internal_config = Internal.from_qsettings()
         self.save()  # If running for the first time, initializes the settings with default values
 
     @property
-    def character(self) -> _Character:
+    def character(self) -> Character:
         return self._character_config
 
     @property
-    def wealth(self) -> _Wealth:
-        return self._wealth_config
+    def equipment(self) -> Equipment:
+        return self._equipment_config
 
     @property
-    def consumables(self) -> _Consumables:
+    def consumables(self) -> Consumables:
         return self._consumables_config
 
     @property
-    def armor(self) -> _Armor:
-        return self._armor_config
+    def database(self) -> Database:
+        return self._database_config
 
     @property
-    def internal(self) -> _InternalConfig:
+    def internal(self) -> Internal:
         return self._internal_config
 
     def update_value(self, group: str | None, key: str, value: t.Any) -> None:
         if group is None:
             return
         group = group.lower()
-        if group not in {"character", "wealth", "consumables", "armor", "internal"}:
+        if group not in {"character", "equipment", "consumables", "database", "internal"}:
             return
 
         if group == "character":
             if hasattr(self._character_config, key):
                 setattr(self._character_config, key, value)
-        elif group == "wealth":
-            if hasattr(self._wealth_config, key):
-                setattr(self._wealth_config, key, value)
+        elif group == "equipment":
+            if hasattr(self._equipment_config, key):
+                setattr(self._equipment_config, key, value)
         elif group == "consumables":
             if hasattr(self._consumables_config, key):
                 setattr(self._consumables_config, key, value)
-        elif group == "armor":
-            if hasattr(self._armor_config, key):
-                setattr(self._armor_config, key, value)
         elif group == "internal":
             if hasattr(self._internal_config, key):
                 setattr(self._internal_config, key, value)
+        elif group == "database":
+            if hasattr(self._database_config, key):
+                setattr(self._database_config, key, value)
 
         self.save()
 
     def save(self) -> None:
-        self._character_config.save()
-        self._wealth_config.save()
-        self._consumables_config.save()
-        self._armor_config.save()
-        self._internal_config.save()
+        for s in self.__slots__:
+            config = getattr(self, s)
+            config.to_qsettings()
+        # self._character_config.to_qsettings()
+        # self._equipment_config.to_qsettings()
+        # self._consumables_config.to_qsettings()
+        # self._database_config.to_qsettings()
+        # self._internal_config.to_qsettings()
 
     def reset(self) -> None:
-        self._character_config.reset()
-        self._wealth_config.reset()
-        self._consumables_config.reset()
-        self._armor_config.reset()
-        self._internal_config.reset()
+        for s in self.__slots__:
+            config = getattr(self, s)
+            config.restore_defaults()
+        # self._character_config.restore_defaults()
+        # self._equipment_config.restore_defaults()
+        # self._consumables_config.restore_defaults()
+        # self._internal_config.restore_defaults()
 
     def create_editor_window(self) -> QtWidgets.QWidget:
         widget = QtWidgets.QWidget()
         layout = QtWidgets.QGridLayout()
         widget.setLayout(layout)
 
-        character_widget = self._character_config.create_editor_widget()
-        wealth_widget = self._wealth_config.create_editor_widget()
-        consumables_widget = self._consumables_config.create_editor_widget()
-        armor_widget = self._armor_config.create_editor_widget()
+        character_widget = self._character_config.create_editor()
+        equipment_widget = self._equipment_config.create_editor()
+        consumables_widget = self._consumables_config.create_editor()
+        database_widget = self._database_config.create_editor()
 
         character_label = qfw.SubtitleLabel("Character")
-        wealth_label = qfw.SubtitleLabel("Wealth")
+        equipment_label = qfw.SubtitleLabel("Equipment")
         consumables_label = qfw.SubtitleLabel("Consumables")
-        armor_label = qfw.SubtitleLabel("Armor")
+        database_label = qfw.SubtitleLabel("Database")
 
         layout.addWidget(character_label, 0, 0)
         layout.addWidget(character_widget, 1, 0)
 
-        layout.addWidget(wealth_label, 2, 0)
-        layout.addWidget(wealth_widget, 3, 0)
+        layout.addWidget(equipment_label, 2, 0)
+        layout.addWidget(equipment_widget, 3, 0)
 
         layout.addWidget(consumables_label, 0, 1)
         layout.addWidget(consumables_widget, 1, 1)
 
-        layout.addWidget(armor_label, 2, 1)
-        layout.addWidget(armor_widget, 3, 1)
-
+        layout.addWidget(database_label, 2, 1)
+        layout.addWidget(database_widget, 3, 1)
+        
         return widget
+
+    def clean_and_reset(self) -> None:
+        QtCore.QSettings().clear()
+        self.reset()

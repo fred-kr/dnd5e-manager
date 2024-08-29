@@ -1,54 +1,39 @@
-import math
 import typing as t
 
-import attrs
 from PySide6 import QtCore
 
 from .. import type_defs as _t
 from ..config import Config
+from .equipment import Item
 
 ItemDataRole = QtCore.Qt.ItemDataRole
-
-
-@attrs.define
-class Item:
-    name: str = attrs.field()
-    weight: float = attrs.field(default=0.0, converter=lambda x: round(x, 1))
-    value: float = attrs.field(default=0.0, converter=lambda x: round(x, 2))
-    description: str = attrs.field(default="")
-
-    def to_dict(self) -> _t.ItemDict:
-        return _t.ItemDict(**attrs.asdict(self))
-
-    @classmethod
-    def from_dict(cls, data: _t.ItemDict) -> "Item":
-        return cls(**data)
-
-    @property
-    def slots(self) -> int:
-        return math.ceil(self.weight / Config().armor.PoundsPerSlot)
 
 
 class ItemTableModel(QtCore.QAbstractTableModel):
     def __init__(self, items: list[Item] | None = None, parent: QtCore.QObject | None = None) -> None:
         super().__init__(parent)
         self._items = items or []
-        self._header = ("Name", "Value (gp)", "Weight (lbs)", "Slots")
 
     @property
     def items(self) -> list[Item]:
         return self._items
+
+    @property
+    def table_header(self) -> tuple[str, str, str]:
+        return ("Name", "Value (gp)", f"Weight ({Config().equipment.WeightFormat})")
 
     def set_items(self, items: list[Item]) -> None:
         self.beginResetModel()
         self._items = items
         self.endResetModel()
 
+        self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
+
     def rowCount(self, parent: _t.ModelIndex | None = None) -> int:
         return len(self._items)
 
     def columnCount(self, parent: _t.ModelIndex | None = None) -> int:
-        return len(self._header)
+        return 3
 
     def data(self, index: _t.ModelIndex, role: int = ItemDataRole.DisplayRole) -> t.Any:
         if not index.isValid() or not 0 <= index.row() < len(self._items):
@@ -85,7 +70,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         role: int = ItemDataRole.DisplayRole,
     ) -> t.Any:
         if role == ItemDataRole.DisplayRole and orientation == QtCore.Qt.Orientation.Horizontal:
-            return self._header[section]
+            return self.table_header[section]
         return None
 
     def flags(self, index: _t.ModelIndex) -> QtCore.Qt.ItemFlag:
@@ -131,7 +116,6 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         column: int,
         order: QtCore.Qt.SortOrder = QtCore.Qt.SortOrder.AscendingOrder,
     ) -> None:
-        # column_map = {0: "name", 1: "value", 2: "weight", 3: "slots"}
         if not self._items or not 0 <= column < self.columnCount():
             return
 
@@ -141,8 +125,6 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             attr = "value"
         elif column == 2:
             attr = "weight"
-        elif column == 3:
-            attr = "slots"
         else:
             return
 
@@ -160,6 +142,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         self.beginRemoveRows(index.parent(), index.row(), index.row())
         item = self._items.pop(index.row())
         self.endRemoveRows()
+        self.dataChanged.emit(index, index)
         return item
 
     @QtCore.Slot()
@@ -169,23 +152,17 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
         self._items.append(item)
         self.endInsertRows()
+        self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
     def insert_item(self, item: Item, row: int) -> None:
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
         self._items.insert(row, item)
         self.endInsertRows()
+        self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
     @QtCore.Slot()
     def clear(self) -> None:
         self.beginResetModel()
         self._items.clear()
         self.endResetModel()
-
-    def total_weight(self) -> float:
-        return sum(item.weight for item in self._items)
-
-    def total_value(self) -> float:
-        return sum(item.value for item in self._items)
-
-    def total_slots(self) -> int:
-        return sum(item.slots for item in self._items)
+        self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
