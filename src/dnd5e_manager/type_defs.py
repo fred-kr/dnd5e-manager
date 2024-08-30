@@ -1,17 +1,16 @@
+import decimal
 import typing as t
 
 from PySide6 import QtCore
 
-from .enum_defs import CharacterRace, CreatureSize, EquipmentCategory, ItemWeightFormat
-
-if t.TYPE_CHECKING:
-    from .models.equipment import Cost
+from .enum_defs import CharacterRace, CreatureSize, ItemWeightFormat
 
 type ModelIndex = QtCore.QModelIndex | QtCore.QPersistentModelIndex
 
 
 class ConfigBaseDict(t.TypedDict):
     pass
+
 
 class CharacterConfigDict(ConfigBaseDict):
     Name: str
@@ -76,24 +75,11 @@ class ConsumablesDataDict(t.TypedDict):
     needles: int
 
 
-class EquipmentDict(t.TypedDict):
-    category: EquipmentCategory
-    name: str
-    cost: "Cost"
-
-
-class ArmorDict(EquipmentDict):
-    armor_class: int
-    max_dex_bonus: int | None
-    strength_requirement: int | None
-    stealth_disadvantage: bool
-
-
 class ItemDict(t.TypedDict):
     name: str
-    pounds: float
+    pounds: decimal.Decimal
     slots: int
-    value: float
+    cost: decimal.Decimal
     description: str
 
 

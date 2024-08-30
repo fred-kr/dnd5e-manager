@@ -1,5 +1,5 @@
 [project]
-name = "dnd-app"
+name = "dnd5e-manager"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -23,7 +23,7 @@ dev-dependencies = [
     "sourcery>=1.22.0",
     "pyinstaller>=6.10.0",
     "pyinstaller-hooks-contrib>=2024.8",
-    "ipython>=8.26.0",
+    "ipython>=8.27.0",
     "rich>=13.8.0",
 ]
 

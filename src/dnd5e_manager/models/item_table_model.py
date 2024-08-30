@@ -1,3 +1,4 @@
+import decimal
 import typing as t
 
 from PySide6 import QtCore
@@ -7,6 +8,7 @@ from ..config import Config
 from .equipment import Item
 
 ItemDataRole = QtCore.Qt.ItemDataRole
+D = decimal.Decimal
 
 
 class ItemTableModel(QtCore.QAbstractTableModel):
@@ -20,7 +22,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
 
     @property
     def table_header(self) -> tuple[str, str, str]:
-        return ("Name", "Value (gp)", f"Weight ({Config().equipment.WeightFormat})")
+        return ("Name", "Cost (gp)", f"Weight ({Config().equipment.WeightFormat})")
 
     def set_items(self, items: list[Item]) -> None:
         self.beginResetModel()
@@ -45,16 +47,14 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             if column == 0:
                 return item.name
             elif column == 1:
-                return item.value
+                return str(item.cost)
             elif column == 2:
-                return item.weight if item.weight != 0 else "--"
-            elif column == 3:
-                return item.slots
+                return str(item.weight)
         elif role == ItemDataRole.EditRole:
             if column == 0:
                 return item.name
             elif column == 1:
-                return item.value
+                return item.cost
             elif column == 2:
                 return item.weight
         elif role == ItemDataRole.UserRole:
@@ -91,18 +91,18 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             item.name = value
         elif column == 1:
             if not value:
-                value = 0.0
+                value = D(0.00)
             try:
-                value = float(value)
-            except ValueError:
+                value = D(value)
+            except decimal.InvalidOperation:
                 return False
-            item.value = value
+            item.cost = value
         elif column == 2:
             if not value:
-                value = 0.0
+                value = D(0.0)
             try:
-                value = float(value)
-            except ValueError:
+                value = D(value)
+            except decimal.InvalidOperation:
                 return False
             item.weight = value
         else:
@@ -122,7 +122,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         if column == 0:
             attr = "name"
         elif column == 1:
-            attr = "value"
+            attr = "cost"
         elif column == 2:
             attr = "weight"
         else:

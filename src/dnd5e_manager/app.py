@@ -5,22 +5,20 @@ from pathlib import Path
 import qfluentwidgets as qfw
 from PySide6 import QtCore, QtWidgets
 
+from . import type_defs as _t
 from .config import Config
 from .icons import Icons
 from .widgets.main_window import MainWindow
-from . import type_defs as _t
 
 
 class EquipmentManager(QtWidgets.QApplication):
-    def __init__(self, clean_config: bool, sys_argv: t.Sequence[str]) -> None:
+    def __init__(self, sys_argv: t.Sequence[str]) -> None:
         super().__init__(sys_argv)
-    
+
         self.setOrganizationName("QuackTech")
         self.setApplicationName("DnD5e Equipment Manager")
 
         self.mw = MainWindow()
-        if clean_config:
-            self.mw.reset_config()
         self._setup_command_bar()
         self.mw.setWindowTitle("DnD5e Equipment Manager")
         self.capacity_exceeded_msg_shown = False

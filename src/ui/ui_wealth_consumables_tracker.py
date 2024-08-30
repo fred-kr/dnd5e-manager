@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QDoubleSpinBox, Q
     QGridLayout, QHBoxLayout, QSizePolicy, QSpinBox,
     QVBoxLayout, QWidget)
 
-from dnd_app import (SlotDoubleSpinBox, SlotSpinBox)
+from dnd5e_manager import (SlotDoubleSpinBox, SlotSpinBox)
 from qfluentwidgets import (BodyLabel, StrongBodyLabel, SubtitleLabel, TransparentToolButton)
 from . import resources_rc
 

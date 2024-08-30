@@ -136,4 +136,7 @@
     <file>fluent-icons/ZoomIn.svg</file>
     <file>fluent-icons/ZoomOut.svg</file>
   </qresource>
+  <qresource prefix="html">
+    <file>sheet_info.html</file>
+  </qresource>
 </RCC>

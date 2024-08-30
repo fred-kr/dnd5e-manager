@@ -278,10 +278,10 @@ class Coin(enum.Enum):
     )
 
     def __str__(self) -> str:
-        return self.value.name
+        return self.unit
 
     @property
-    def symbol(self) -> str:
+    def unit(self) -> str:
         return self.value.symbol
 
     @property
@@ -305,23 +305,6 @@ class Coin(enum.Enum):
         return self.value.platinum_exchange_rate
 
 
-class EquipmentCategory(enum.StrEnum):
-    CURRENCY = "currency"
-    ARMOR = "armor"
-    WEAPON = "weapon"
-    ADVENTURING_GEAR = "adventuring_gear"
-    TOOL = "tool"
-    MOUNT = "mount"
-    VEHICLE = "vehicle"
-    TRADEGOOD = "trade_good"
-    LIFESTYLE_EXPENSE = "lifestyle_expense"
-    FOOD_DRINK_LODGING = "food_drink_lodging"
-    SERVICE = "service"
-
-    def __str__(self) -> str:
-        return self.name.replace("_", " ").title()
-
-
 class CharacterRace(enum.StrEnum):
     DRAGONBORN = "dragonborn"
     DWARF = "dwarf"
@@ -338,3 +321,14 @@ class CharacterRace(enum.StrEnum):
         return self.name.replace("_", "-").title()
 
 
+class MagicItemRarity(enum.Enum):
+    VARIES = "varies"
+    COMMON = "common"
+    UNCOMMON = "uncommon"
+    RARE = "rare"
+    VERY_RARE = "very rare"
+    LEGENDARY = "legendary"
+    ARTIFACT = "artifact"
+
+    def __str__(self) -> str:
+        return self.name.replace("_", " ").title()

@@ -1,5 +1,7 @@
+import decimal
+
 import qfluentwidgets as qfw
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from ...ui.ui_item_tables import Ui_ItemTables
 from .. import type_defs as _t
@@ -7,6 +9,7 @@ from ..icons import Icons
 from ..models.item_table_model import Item, ItemTableModel
 
 ItemDataRole = QtCore.Qt.ItemDataRole
+D = decimal.Decimal
 
 
 class ItemTableDelegate(QtWidgets.QStyledItemDelegate):
@@ -18,9 +21,11 @@ class ItemTableDelegate(QtWidgets.QStyledItemDelegate):
     ) -> QtWidgets.QWidget:
         initial_value = index.model().data(index, ItemDataRole.EditRole)
 
-        if isinstance(initial_value, float):
+        if isinstance(initial_value, (float, decimal.Decimal)):
             editor = QtWidgets.QDoubleSpinBox(parent)
             editor.setRange(0, 100_000)
+            editor.setDecimals(2)
+            editor.setSingleStep(0.01)
             editor.setFrame(False)
         elif isinstance(initial_value, int):
             editor = QtWidgets.QSpinBox(parent)
@@ -39,15 +44,20 @@ class ItemTableDelegate(QtWidgets.QStyledItemDelegate):
         value = index.model().data(index, ItemDataRole.EditRole)
         if isinstance(editor, QtWidgets.QLineEdit):
             editor.setText(value)
-        elif isinstance(editor, (QtWidgets.QDoubleSpinBox, QtWidgets.QSpinBox)):
-            editor.setValue(value)
+        elif isinstance(editor, QtWidgets.QDoubleSpinBox):
+            editor.setValue(float(value))  # If value is a Decimal, it will be converted to a float
+        elif isinstance(editor, QtWidgets.QSpinBox):
+            editor.setValue(int(value))
         else:
             super().setEditorData(editor, index)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: _t.ModelIndex) -> None:
         if isinstance(editor, QtWidgets.QLineEdit):
             model.setData(index, editor.text(), ItemDataRole.EditRole)
-        elif isinstance(editor, (QtWidgets.QDoubleSpinBox, QtWidgets.QSpinBox)):
+        elif isinstance(editor, QtWidgets.QDoubleSpinBox):
+            value = round(D(editor.value()), 2)
+            model.setData(index, value, ItemDataRole.EditRole)
+        elif isinstance(editor, QtWidgets.QSpinBox):
             model.setData(index, editor.value(), ItemDataRole.EditRole)
         else:
             super().setModelData(editor, model, index)
@@ -67,6 +77,13 @@ class ItemTablesWidget(QtWidgets.QWidget):
 
         self.ui = Ui_ItemTables()
         self.ui.setupUi(self)
+
+        self.ui.table_view_inventory.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.ui.table_view_inventory.customContextMenuRequested.connect(self.show_context_menu)
+
+        self.ui.table_view_storage.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.ui.table_view_storage.customContextMenuRequested.connect(self.show_context_menu)
+
         self.ui.table_view_inventory.setItemDelegate(ItemTableDelegate(self.ui.table_view_inventory))
         self.ui.table_view_storage.setItemDelegate(ItemTableDelegate(self.ui.table_view_storage))
 
@@ -144,6 +161,8 @@ class ItemTablesWidget(QtWidgets.QWidget):
                 self.action_move_to_storage,
             ]
         )
+        self.ui.command_bar_inventory.addHiddenAction(self.action_edit_inventory_item)
+
         self.ui.command_bar_storage.addActions(
             [
                 self.action_add_storage_item,
@@ -152,6 +171,7 @@ class ItemTablesWidget(QtWidgets.QWidget):
                 self.action_move_to_inventory,
             ]
         )
+        self.ui.command_bar_storage.addHiddenAction(self.action_edit_storage_item)
 
     def refresh_values(self) -> None:
         self.inventory_model.layoutChanged.emit()
@@ -202,6 +222,58 @@ class ItemTablesWidget(QtWidgets.QWidget):
         if ok:
             item.description = new_description
             self.storage_model.layoutChanged.emit()
+
+    @QtCore.Slot()
+    def show_context_menu(self, pos: QtCore.QPoint) -> None:
+        sender: qfw.TableView = self.sender()
+        menu = qfw.RoundMenu()
+        
+        if sender == self.ui.table_view_inventory:
+            current_index = self.ui.table_view_inventory.indexAt(pos)
+            menu.addActions(
+                [
+                    self.action_add_inventory_item,
+                    self.action_clear_inventory,
+                ]
+            )
+            if current_index.isValid():
+                selection_menu = qfw.RoundMenu(
+                    f"Item: {self.inventory_model.data(current_index, ItemDataRole.UserRole).name}", self
+                )
+                selection_menu.addActions(
+                    [
+                        self.action_remove_inventory_item,
+                        self.action_move_to_storage,
+                        self.action_edit_inventory_item,
+                    ]
+                )
+                menu.addMenu(selection_menu)
+
+        elif sender == self.ui.table_view_storage:
+            current_index = self.ui.table_view_storage.indexAt(pos)
+
+            menu.addActions(
+                [
+                    self.action_add_storage_item,
+                    self.action_clear_storage,
+                ]
+            )
+            if current_index.isValid():
+                selection_menu = qfw.RoundMenu(
+                    f"Item: {self.storage_model.data(current_index, ItemDataRole.UserRole).name}", self
+                )
+                selection_menu.addActions(
+                    [
+                        self.action_remove_storage_item,
+                        self.action_move_to_inventory,
+                        self.action_edit_storage_item,
+                    ]
+                )
+                menu.addMenu(selection_menu)
+        else:
+            return
+
+        menu.popup(QtGui.QCursor.pos())
 
     def get_slots_used(self) -> int:
         return sum(item.slots for item in self.inventory_model.items)

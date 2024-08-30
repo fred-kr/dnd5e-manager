@@ -428,20 +428,11 @@ class Config:
         for s in self.__slots__:
             config = getattr(self, s)
             config.to_qsettings()
-        # self._character_config.to_qsettings()
-        # self._equipment_config.to_qsettings()
-        # self._consumables_config.to_qsettings()
-        # self._database_config.to_qsettings()
-        # self._internal_config.to_qsettings()
 
     def reset(self) -> None:
         for s in self.__slots__:
             config = getattr(self, s)
             config.restore_defaults()
-        # self._character_config.restore_defaults()
-        # self._equipment_config.restore_defaults()
-        # self._consumables_config.restore_defaults()
-        # self._internal_config.restore_defaults()
 
     def create_editor_window(self) -> QtWidgets.QWidget:
         widget = QtWidgets.QWidget()

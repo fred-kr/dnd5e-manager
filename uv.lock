@@ -105,7 +105,7 @@ wheels = [
 ]
 
 [[package]]
-name = "dnd-app"
+name = "dnd5e-manager"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
@@ -140,7 +140,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "ipython", specifier = ">=8.26.0" },
+    { name = "ipython", specifier = ">=8.27.0" },
     { name = "pyinstaller", specifier = ">=6.10.0" },
     { name = "pyinstaller-hooks-contrib", specifier = ">=2024.8" },
     { name = "rich", specifier = ">=13.8.0" },
@@ -167,7 +167,7 @@ wheels = [
 
 [[package]]
 name = "ipython"
-version = "8.26.0"
+version = "8.27.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -180,9 +180,9 @@ dependencies = [
     { name = "stack-data" },
     { name = "traitlets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7e/f4/dc45805e5c3e327a626139c023b296bafa4537e602a61055d377704ca54c/ipython-8.26.0.tar.gz", hash = "sha256:1cec0fbba8404af13facebe83d04436a7434c7400e59f47acf467c64abd0956c", size = 5493422 }
+sdist = { url = "https://files.pythonhosted.org/packages/57/24/d4fabaca03c8804bf0b8d994c8ae3a20e57e9330d277fb43d83e558dec5e/ipython-8.27.0.tar.gz", hash = "sha256:0b99a2dc9f15fd68692e898e5568725c6d49c527d36a9fb5960ffbdeaa82ff7e", size = 5494984 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/48/4d2818054671bb272d1b12ca65748a4145dc602a463683b5c21b260becee/ipython-8.26.0-py3-none-any.whl", hash = "sha256:e6b347c27bdf9c32ee9d31ae85defc525755a1869f14057e900675b9e8d6e6ff", size = 817939 },
+    { url = "https://files.pythonhosted.org/packages/a8/a2/6c725958e6f135d8e5de081e69841bb2c1d84b3fc259d02eb092b8fc203a/ipython-8.27.0-py3-none-any.whl", hash = "sha256:f68b3cb8bde357a5d7adc9598d57e22a45dfbea19eb6b98286fa3b288c9cd55c", size = 818986 },
 ]
 
 [[package]]

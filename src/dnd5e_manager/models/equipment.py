@@ -1,10 +1,13 @@
 import decimal
+import typing as t
 
 import attrs
 
 from .. import type_defs as _t
 from ..config import Config
-from ..enum_defs import Coin, EquipmentCategory, ItemWeightFormat
+from ..enum_defs import Coin, ItemWeightFormat
+
+D = decimal.Decimal
 
 
 @attrs.define
@@ -33,57 +36,31 @@ class Cost:
         return self.unit.platinum_exchange_rate * self.quantity
 
 
-@attrs.define
-class EquipmentBase:
-    category: EquipmentCategory = attrs.field()
-    name: str = attrs.field()
-    cost: Cost = attrs.field()
-
-    def to_dict(self) -> _t.EquipmentDict:
-        raise NotImplementedError
-
-    @classmethod
-    def from_dict(cls, data: _t.EquipmentDict) -> "EquipmentBase":
-        return cls(**data)
-
-
-@attrs.define
-class Armor(EquipmentBase):
-    armor_class: int = attrs.field()
-    max_dex_bonus: int | None = attrs.field(
-        default=None, metadata={"description": "The maximum Dexterity modifier that can be applied to the wearer's AC."}
-    )
-    strength_requirement: int | None = attrs.field(
-        default=None,
-        metadata={
-            "description": "If not None, the armor reduces the wearer's speed by 10 feet unless the wearer has a Strength score equal to or higher than the requirement."
-        },
-    )
-    stealth_disadvantage: bool = attrs.field(
-        default=False, metadata={"description": "If True, the wearer has disadvantage on Stealth checks."}
-    )
-
-    def to_dict(self) -> _t.ArmorDict:
-        return _t.ArmorDict(**attrs.asdict(self))
+def _decimal_serializer(inst: attrs.AttrsInstance, field: t.Any, value: t.Any) -> t.Any:
+    return str(value) if isinstance(value, decimal.Decimal) else value
 
 
 @attrs.define
 class Item:
     name: str = attrs.field()
-    pounds: float = attrs.field(default=0.0, converter=lambda x: round(x, 1))
+    pounds: decimal.Decimal = attrs.field(default=D(0.0))
     slots: int = attrs.field(default=0)
-    value: float = attrs.field(default=0.0, converter=lambda x: round(x, 2))
+    cost: decimal.Decimal = attrs.field(default=D(0.00))
     description: str = attrs.field(default="")
 
     def to_dict(self) -> _t.ItemDict:
-        return _t.ItemDict(**attrs.asdict(self))
+        # Turn decimal.Decimal instances into strings for JSON serialization
+        return _t.ItemDict(**attrs.asdict(self, value_serializer=_decimal_serializer))
 
     @classmethod
     def from_dict(cls, data: _t.ItemDict) -> "Item":
+        # Ensure that cost and pounds are Decimal instances
+        data["cost"] = D(data["cost"])
+        data["pounds"] = D(data["pounds"])
         return cls(**data)
 
     @property
-    def weight(self) -> float | int:
+    def weight(self) -> decimal.Decimal | int:
         weight_format = Config().equipment.WeightFormat
         if weight_format == ItemWeightFormat.POUNDS:
             return self.pounds
@@ -93,10 +70,10 @@ class Item:
             raise ValueError(f"Invalid weight format: {weight_format}")
 
     @weight.setter
-    def weight(self, value: float | int) -> None:
+    def weight(self, value: decimal.Decimal | int) -> None:
         weight_format = Config().equipment.WeightFormat
         if weight_format == ItemWeightFormat.POUNDS:
-            self.pounds = value
+            self.pounds = D(value)
         elif weight_format == ItemWeightFormat.SLOTS:
             self.slots = int(value)
         else:

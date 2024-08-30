@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5e Inventory Tracking Sheet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+
+        h1,
+        h2 {
+            text-align: left;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .slots,
+        .tracker,
+        .encumbrance {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .slots th,
+        .slots td,
+        .tracker th,
+        .tracker td,
+        .encumbrance th,
+        .encumbrance td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .slots th,
+        .tracker th,
+        .encumbrance th {
+            background-color: #f2f2f2;
+        }
+
+        .note {
+            font-style: italic;
+            color: #555;
+        }
+
+        .row-table {
+            width: 100%;
+        }
+
+        .row-table td {
+            vertical-align: top;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>5e Inventory Tracking Sheet</h1>
+
+        <table class="row-table">
+            <tr>
+                <td>
+                    <h2>Tracker</h2>
+                    <table class="tracker">
+                        <tr>
+                            <th>Item</th>
+                            <th>Notes</th>
+                        </tr>
+                        <tr>
+                            <td>Torches</td>
+                            <td>Burn for 1 hour.</td>
+                        </tr>
+                        <tr>
+                            <td>Oil flasks</td>
+                            <td>Lanterns burn for 6 hours per oil flask.</td>
+                        </tr>
+                        <tr>
+                            <td>Rations</td>
+                            <td>1 lb. of food per day.</td>
+                        </tr>
+                        <tr>
+                            <td>Water</td>
+                            <td>1 gallon per day (2 gallons if hot).</td>
+                        </tr>
+                        <tr>
+                            <td>Ammunition</td>
+                            <td>5 daggers, 20 arrows, bolts, darts, or bullets, or 50 needles fill 1 slot.</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <table class="row-table">
+            <tr>
+                <td>
+                    <h2>Encumbrance</h2>
+                    <table class="encumbrance">
+                        <tr>
+                            <th>Status</th>
+                            <th>Effect</th>
+                        </tr>
+                        <tr>
+                            <td>Unencumbered</td>
+                            <td>Normal speed.</td>
+                        </tr>
+                        <tr>
+                            <td>Encumbered</td>
+                            <td>Your speed drops by 10 feet.</td>
+                        </tr>
+                        <tr>
+                            <td>Heavily encumbered</td>
+                            <td>Your speed drops by 20 feet and you have disadvantage on ability checks, attack rolls,
+                                and saving throws that use Strength, Dexterity, or Constitution.</td>
+                        </tr>
+                    </table>
+                    <p class="note">You can carry items that fill a number of slots equal to your Strength score without
+                        penalty. If you carry more than your Strength score, you are encumbered. You cannot carry more
+                        than three times your Strength score.</p>
+                    <p class="note">These limits are doubled for Large creatures and halved for Tiny creatures. Dwarves
+                        may ignore penalties to speed.</p>
+                </td>
+            </tr>
+        </table>
+
+
+        <p class="note">Version 2.4 @carljonard</p>
+    </div>
+
+</body>
+
+</html>
