@@ -225,9 +225,9 @@ class ItemTablesWidget(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def show_context_menu(self, pos: QtCore.QPoint) -> None:
-        sender: qfw.TableView = self.sender()
+        sender: qfw.TableView = self.sender()  # type: ignore
         menu = qfw.RoundMenu()
-        
+
         if sender == self.ui.table_view_inventory:
             current_index = self.ui.table_view_inventory.indexAt(pos)
             menu.addActions(

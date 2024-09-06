@@ -7,6 +7,8 @@ from .enum_defs import CharacterRace, CreatureSize, ItemWeightFormat
 
 type ModelIndex = QtCore.QModelIndex | QtCore.QPersistentModelIndex
 
+# if t.TYPE_CHECKING:
+    # from .models.equipment import Cost
 
 class ConfigBaseDict(t.TypedDict):
     pass
@@ -74,12 +76,16 @@ class ConsumablesDataDict(t.TypedDict):
     bullets: int
     needles: int
 
+class CostDict(t.TypedDict):
+    unit: str
+    quantity: int
 
 class ItemDict(t.TypedDict):
     name: str
+    category: str
     pounds: decimal.Decimal
     slots: int
-    cost: decimal.Decimal
+    cost: CostDict
     description: str
 
 
@@ -88,3 +94,4 @@ class SheetDataDict(t.TypedDict):
     consumables: ConsumablesDataDict
     inventory: list[ItemDict]
     storage: list[ItemDict]
+

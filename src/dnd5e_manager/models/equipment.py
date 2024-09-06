@@ -15,6 +15,20 @@ class Cost:
     unit: Coin = attrs.field()
     quantity: int = attrs.field(default=0)
 
+    def __str__(self) -> str:
+        return f"{self.quantity} {str(self.unit).upper()}"
+
+    def to_dict(self) -> _t.CostDict:
+        return {
+            "unit": self.unit.value.name,
+            "quantity": self.quantity,
+        }
+
+    @classmethod
+    def from_dict(cls, data: _t.CostDict) -> "Cost":
+        unit = Coin[data["unit"].upper()]
+        return cls(unit=unit, quantity=data["quantity"])
+
     @property
     def copper(self) -> decimal.Decimal:
         return self.unit.copper_exchange_rate * self.quantity
@@ -36,28 +50,38 @@ class Cost:
         return self.unit.platinum_exchange_rate * self.quantity
 
 
-def _decimal_serializer(inst: attrs.AttrsInstance, field: t.Any, value: t.Any) -> t.Any:
-    return str(value) if isinstance(value, decimal.Decimal) else value
+def _item_serializer(inst: attrs.AttrsInstance, field: t.Any, value: t.Any) -> t.Any:
+    if isinstance(value, decimal.Decimal):
+        return str(value)
+    elif isinstance(value, Cost):
+        return value.to_dict()
+    else:
+        return value
 
 
 @attrs.define
 class Item:
     name: str = attrs.field()
+    category: str = attrs.field(default="")
     pounds: decimal.Decimal = attrs.field(default=D(0.0))
     slots: int = attrs.field(default=0)
-    cost: decimal.Decimal = attrs.field(default=D(0.00))
+    cost: Cost = attrs.field(default=Cost(unit=Coin.GOLD, quantity=0))
     description: str = attrs.field(default="")
 
     def to_dict(self) -> _t.ItemDict:
-        # Turn decimal.Decimal instances into strings for JSON serialization
-        return _t.ItemDict(**attrs.asdict(self, value_serializer=_decimal_serializer))
+        return _t.ItemDict(**attrs.asdict(self, value_serializer=_item_serializer))
 
     @classmethod
     def from_dict(cls, data: _t.ItemDict) -> "Item":
-        # Ensure that cost and pounds are Decimal instances
-        data["cost"] = D(data["cost"])
-        data["pounds"] = D(data["pounds"])
-        return cls(**data)
+        cost = Cost.from_dict(data["cost"])
+        return cls(
+            name=data["name"],
+            category=data["category"],
+            pounds=D(data["pounds"]),
+            slots=int(data["slots"]),
+            cost=cost,
+            description=data["description"],
+        )
 
     @property
     def weight(self) -> decimal.Decimal | int:

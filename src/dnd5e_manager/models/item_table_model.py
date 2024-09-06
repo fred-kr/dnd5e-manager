@@ -7,6 +7,7 @@ from .. import type_defs as _t
 from ..config import Config
 from .equipment import Item
 
+
 ItemDataRole = QtCore.Qt.ItemDataRole
 D = decimal.Decimal
 
@@ -21,8 +22,8 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         return self._items
 
     @property
-    def table_header(self) -> tuple[str, str, str]:
-        return ("Name", "Cost (gp)", f"Weight ({Config().equipment.WeightFormat})")
+    def table_header(self) -> tuple[str, str, str, str]:
+        return ("Name", "Category", "Cost", f"Weight ({Config().equipment.WeightFormat})")
 
     def set_items(self, items: list[Item]) -> None:
         self.beginResetModel()
@@ -35,7 +36,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         return len(self._items)
 
     def columnCount(self, parent: _t.ModelIndex | None = None) -> int:
-        return 3
+        return 4
 
     def data(self, index: _t.ModelIndex, role: int = ItemDataRole.DisplayRole) -> t.Any:
         if not index.isValid() or not 0 <= index.row() < len(self._items):
@@ -44,18 +45,22 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         row, column = index.row(), index.column()
         item = self._items[row]
         if role == ItemDataRole.DisplayRole:
-            if column == 0:
+            if column == 0:  # name
                 return item.name
-            elif column == 1:
+            elif column == 1:  # category
+                return item.category
+            elif column == 2:  # cost
                 return str(item.cost)
-            elif column == 2:
+            elif column == 3:  # weight
                 return str(item.weight)
         elif role == ItemDataRole.EditRole:
             if column == 0:
                 return item.name
             elif column == 1:
-                return item.cost
+                return item.category
             elif column == 2:
+                return item.cost
+            elif column == 3:
                 return item.weight
         elif role == ItemDataRole.UserRole:
             return item
@@ -77,7 +82,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return QtCore.Qt.ItemFlag.NoItemFlags
         flags = super().flags(index)
-        if 0 <= index.column() < 3:
+        if 0 <= index.column() < self.columnCount():
             flags |= QtCore.Qt.ItemFlag.ItemIsEditable
         return flags
 
@@ -90,6 +95,8 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         if column == 0:
             item.name = value
         elif column == 1:
+            item.category = value
+        elif column == 2:
             if not value:
                 value = D(0.00)
             try:
@@ -97,7 +104,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             except decimal.InvalidOperation:
                 return False
             item.cost = value
-        elif column == 2:
+        elif column == 3:
             if not value:
                 value = D(0.0)
             try:
@@ -122,8 +129,10 @@ class ItemTableModel(QtCore.QAbstractTableModel):
         if column == 0:
             attr = "name"
         elif column == 1:
-            attr = "cost"
+            attr = "category"
         elif column == 2:
+            attr = "cost"
+        elif column == 3:
             attr = "weight"
         else:
             return

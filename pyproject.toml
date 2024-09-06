@@ -7,11 +7,12 @@ requires-python = ">=3.12"
 dependencies = [
     "pyside6>=6.7.2",
     "attrs>=24.2.0",
-    "numpy>=2.1.0",
+    "numpy>=2.1.1",
     "pyside6-fluent-widgets>=1.6.3",
     "requests>=2.32.3",
     "loguru>=0.7.2",
-    "pydantic>=2.8.2",
+    "dnd5e-srd-api",
+    "rich>=13.8.0",
 ]
 
 [build-system]
@@ -28,6 +29,7 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
+dnd5e-srd-api = { git = "https://github.com/fred-kr/dnd5e-srd-api.git", branch = "attrs-version" }
 
 [tool.ruff]
 target-version = "py312"

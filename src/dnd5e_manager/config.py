@@ -25,8 +25,8 @@ def get_app_dir() -> str:
     )
 
 
-def get_saves_dir() -> str:
-    return QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.DocumentsLocation)
+# def get_saves_dir() -> str:
+#     return QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.DocumentsLocation)
 
 
 def get_setting_path(inst_or_cls: attrs.AttrsInstance | t.Type[attrs.AttrsInstance], attr: t.Any) -> str:
@@ -344,11 +344,13 @@ class Database(ConfigBase):
             "description": "The base URL of the API.",
         },
     )
-    
+
 
 @attrs.define(on_setattr=sync)
 class Internal(ConfigBase):
-    SavesDir: str = attrs.field(factory=get_saves_dir)
+    SavesDir: str = attrs.field(
+        default=QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.DocumentsLocation)
+    )
     WindowGeometry: QtCore.QByteArray = attrs.field(factory=QtCore.QByteArray)
 
     @t.override
@@ -363,6 +365,7 @@ class Config:
         "_consumables_config",
         "_database_config",
         "_internal_config",
+        "_group_names",
     )
     _instance: "Config | None" = None
 
@@ -377,6 +380,7 @@ class Config:
         self._consumables_config = Consumables.from_qsettings()
         self._database_config = Database.from_qsettings()
         self._internal_config = Internal.from_qsettings()
+        self._group_names = frozenset(["character", "equipment", "consumables", "database", "internal"])
         self.save()  # If running for the first time, initializes the settings with default values
 
     @property
@@ -403,7 +407,7 @@ class Config:
         if group is None:
             return
         group = group.lower()
-        if group not in {"character", "equipment", "consumables", "database", "internal"}:
+        if group not in self._group_names:
             return
 
         if group == "character":
@@ -425,7 +429,7 @@ class Config:
         self.save()
 
     def save(self) -> None:
-        for s in self.__slots__:
+        for s in self._group_names:
             config = getattr(self, s)
             config.to_qsettings()
 
@@ -460,7 +464,7 @@ class Config:
 
         layout.addWidget(database_label, 2, 1)
         layout.addWidget(database_widget, 3, 1)
-        
+
         return widget
 
     def clean_and_reset(self) -> None:
