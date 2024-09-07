@@ -56,7 +56,7 @@ class EquipmentManager(QtWidgets.QApplication):
             chkbx.checkStateChanged.connect(
                 lambda check_state: setattr(
                     self, "capacity_exceeded_msg_shown", check_state == QtCore.Qt.CheckState.Checked
-                )
+                ) # type: ignore
             )
             w.addWidget(chkbx)
             w.show()

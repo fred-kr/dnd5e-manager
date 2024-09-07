@@ -10,9 +10,7 @@ dependencies = [
     "numpy>=2.1.1",
     "pyside6-fluent-widgets>=1.6.3",
     "requests>=2.32.3",
-    "loguru>=0.7.2",
     "dnd5e-srd-api",
-    "rich>=13.8.0",
 ]
 
 [build-system]
@@ -25,7 +23,6 @@ dev-dependencies = [
     "pyinstaller>=6.10.0",
     "pyinstaller-hooks-contrib>=2024.8",
     "ipython>=8.27.0",
-    "rich>=13.8.0",
 ]
 
 [tool.uv.sources]
@@ -53,3 +50,4 @@ addopts = [
 pythonVersion = "3.12"
 reportMissingTypeStubs = false
 reportUnknownMemberType = false
+reportUnknownLambdaType = false

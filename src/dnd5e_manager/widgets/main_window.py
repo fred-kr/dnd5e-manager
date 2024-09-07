@@ -5,7 +5,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..config import Config
 from ..icons import Icons
-from ..interfaces.info_page import InfoWidget
+from ..interfaces.info_wiki import InfoWidget
 from ..interfaces.item_tables import ItemTablesWidget
 from ..interfaces.wealth_consumables import WealthConsumablesInterface
 from .encumbrance_bar import EncumbranceBar
@@ -43,7 +43,7 @@ class MainWindow(qfw.MSFluentWindow):
         self.setWindowTitle("DnD5e Equipment Manager")
         self.setWindowIcon(Icons.Backpack.icon())
         self.command_bar = qfw.CommandBar(self)
-        self.command_bar.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.command_bar.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         layout_cb_encumbrance = QtWidgets.QHBoxLayout()
         self.encumbrance_bar = EncumbranceBar(self)
         layout_cb_encumbrance.addWidget(self.command_bar)
