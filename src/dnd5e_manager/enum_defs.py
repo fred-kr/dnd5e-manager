@@ -305,6 +305,21 @@ class Coin(enum.Enum):
         return self.value.platinum_exchange_rate
 
 
+class CurrencyType(enum.StrEnum):
+    COPPER = "cp"
+    SILVER = "sp"
+    ELECTRUM = "ep"
+    GOLD = "gp"
+    PLATINUM = "pp"
+
+    def __str__(self) -> str:
+        return self.name.title()
+    
+    @property
+    def symbol(self) -> str:
+        return self.value
+    
+
 class CharacterRace(enum.StrEnum):
     DRAGONBORN = "dragonborn"
     DWARF = "dwarf"

@@ -25,10 +25,6 @@ def get_app_dir() -> str:
     )
 
 
-# def get_saves_dir() -> str:
-#     return QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.DocumentsLocation)
-
-
 def get_setting_path(inst_or_cls: attrs.AttrsInstance | t.Type[attrs.AttrsInstance], attr: t.Any) -> str:
     class_name = inst_or_cls.__name__ if inspect.isclass(inst_or_cls) else inst_or_cls.__class__.__name__
     return f"{class_name}/{attr.name}"

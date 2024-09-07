@@ -5,8 +5,8 @@ from PySide6 import QtCore
 
 from .. import type_defs as _t
 from ..config import Config
-from .equipment import Item
-
+from ..enum_defs import CurrencyType
+from .equipment import Cost, Item
 
 ItemDataRole = QtCore.Qt.ItemDataRole
 D = decimal.Decimal
@@ -16,6 +16,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
     def __init__(self, items: list[Item] | None = None, parent: QtCore.QObject | None = None) -> None:
         super().__init__(parent)
         self._items = items or []
+        self._display_currency = CurrencyType.GOLD
 
     @property
     def items(self) -> list[Item]:
@@ -23,7 +24,11 @@ class ItemTableModel(QtCore.QAbstractTableModel):
 
     @property
     def table_header(self) -> tuple[str, str, str, str]:
-        return ("Name", "Category", "Cost", f"Weight ({Config().equipment.WeightFormat})")
+        return ("Name", "Category", f"Cost ({self._display_currency})", f"Weight ({Config().equipment.WeightFormat})")
+
+    def set_display_currency(self, currency: CurrencyType) -> None:
+        self._display_currency = currency
+        self.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
     def set_items(self, items: list[Item]) -> None:
         self.beginResetModel()
@@ -50,7 +55,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             elif column == 1:  # category
                 return item.category
             elif column == 2:  # cost
-                return str(item.cost)
+                return str(item.cost.to_currency(self._display_currency))
             elif column == 3:  # weight
                 return str(item.weight)
         elif role == ItemDataRole.EditRole:
@@ -59,13 +64,13 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             elif column == 1:
                 return item.category
             elif column == 2:
-                return item.cost
+                return item.cost.to_currency(self._display_currency)
             elif column == 3:
                 return item.weight
         elif role == ItemDataRole.UserRole:
             return item
         elif role == ItemDataRole.ToolTipRole:
-            return item.description
+            return str(item.cost.converted_values) if column == 2 else item.description
         return None
 
     def headerData(
@@ -103,7 +108,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
                 value = D(value)
             except decimal.InvalidOperation:
                 return False
-            item.cost = value
+            item.cost = Cost.from_currency(self._display_currency, value)
         elif column == 3:
             if not value:
                 value = D(0.0)
@@ -127,19 +132,19 @@ class ItemTableModel(QtCore.QAbstractTableModel):
             return
 
         if column == 0:
-            attr = "name"
+            attr_name = "name"
         elif column == 1:
-            attr = "category"
+            attr_name = "category"
         elif column == 2:
-            attr = "cost"
+            attr_name = "cost"
         elif column == 3:
-            attr = "weight"
+            attr_name = "weight"
         else:
             return
 
         self.layoutAboutToBeChanged.emit()
         self._items.sort(
-            key=lambda item: getattr(item, attr),
+            key=lambda item: getattr(item, attr_name),
             reverse=order == QtCore.Qt.SortOrder.DescendingOrder,
         )
         self.layoutChanged.emit()

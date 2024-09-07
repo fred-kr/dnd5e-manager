@@ -63,6 +63,10 @@ class Ui_Info(object):
 
         self.text_browser_info = QTextBrowser(Info)
         self.text_browser_info.setObjectName(u"text_browser_info")
+        font = QFont()
+        font.setFamilies([u"Lato"])
+        font.setPointSize(12)
+        self.text_browser_info.setFont(font)
         self.text_browser_info.setSource(QUrl(u"qrc:/html/sheet_info.html"))
 
         self.verticalLayout_2.addWidget(self.text_browser_info)

@@ -59,6 +59,12 @@
    </item>
    <item>
     <widget class="QTextBrowser" name="text_browser_info">
+     <property name="font">
+      <font>
+       <family>Lato</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="source">
       <url>
        <string>qrc:/html/sheet_info.html</string>

@@ -152,7 +152,7 @@ dev = [
 [[package]]
 name = "dnd5e-srd-api"
 version = "0.1.0"
-source = { git = "https://github.com/fred-kr/dnd5e-srd-api.git?branch=attrs-version#4663286a234b2c654ab6dad41a75992482cf341b" }
+source = { git = "https://github.com/fred-kr/dnd5e-srd-api.git?branch=attrs-version#bcca0e79fc8ae266887d39318df51192f4e0f90d" }
 dependencies = [
     { name = "attrs" },
     { name = "pydantic" },

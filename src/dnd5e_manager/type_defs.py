@@ -6,6 +6,7 @@ from PySide6 import QtCore
 from .enum_defs import CharacterRace, CreatureSize, ItemWeightFormat
 
 type ModelIndex = QtCore.QModelIndex | QtCore.QPersistentModelIndex
+type Number = int | float | decimal.Decimal | str
 
 # if t.TYPE_CHECKING:
     # from .models.equipment import Cost
@@ -77,8 +78,8 @@ class ConsumablesDataDict(t.TypedDict):
     needles: int
 
 class CostDict(t.TypedDict):
-    unit: str
-    quantity: int
+    display_currency: str
+    quantity: str
 
 class ItemDict(t.TypedDict):
     name: str

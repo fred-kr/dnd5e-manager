@@ -2,8 +2,8 @@ from dnd5e_srd_api.api_interface import (
     APIReference,
     EquipmentCategoriesIndex,
     get,
+    get_item_from_reference,
     get_items_in_category,
-    get_referenced_item,
 )
 from PySide6 import QtCore, QtWidgets
 
@@ -73,7 +73,7 @@ class InfoWidget(QtWidgets.QWidget):
     @QtCore.Slot(QtCore.QModelIndex)
     def search_for_reference(self, index: QtCore.QModelIndex) -> None:
         if api_ref := self.ui.list_view_api.model().data(index, role=QtCore.Qt.ItemDataRole.UserRole):
-            item_data = get_referenced_item(api_ref)
+            item_data = get_item_from_reference(api_ref)
 
-            desc_str = "\n".join(desc) if (desc := item_data.desc) else "No description available."
-            self.ui.text_browser_info.setText(desc_str)
+            desc_str = "\n\n".join(desc) if (desc := item_data.desc) else "No description available."
+            self.ui.text_browser_info.setMarkdown(f"# {item_data.name}\n\n{desc_str}")
