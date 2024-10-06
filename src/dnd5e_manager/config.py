@@ -7,10 +7,13 @@ import attrs
 import qfluentwidgets as qfw
 from attr._make import Factory
 from PySide6 import QtCore, QtWidgets
+# from pyside_config import ConfigBase, EditorWidgetInfo, config
+# from pyside_config.properties import LineEditProperties, SpinBoxProperties
+from pyside_config.widgets import EnumComboBox
 
 from . import type_defs as _t
 from .enum_defs import CharacterRace, CreatureSize, ItemWeightFormat, search_enum
-from .widgets.enum_combo_box import EnumComboBox
+# from .widgets.enum_combo_box import EnumComboBox
 
 
 def get_app_dir() -> str:
@@ -23,6 +26,68 @@ def get_app_dir() -> str:
         if hasattr(sys, "frozen") and app_instance is not None
         else QtCore.QDir.current().canonicalPath()
     )
+
+
+# app_dir = get_app_dir()
+
+
+# @config
+# class Character(ConfigBase):
+#     name: str = attrs.field(
+#         default="",
+#         metadata={
+#             "editor": EditorWidgetInfo(
+#                 label="Name",
+#                 widget_factory=QtWidgets.QLineEdit,
+#                 sig_value_changed="textEdited",
+#                 set_value_method="setText",
+#                 widget_properties=LineEditProperties(hasFrame=False),
+#             ),
+#             "description": "The name of the character.",
+#         }
+#     )
+#     race: CharacterRace = attrs.field(
+#         default=CharacterRace.HUMAN,
+#         converter=functools.partial(search_enum, enum_class=CharacterRace),
+#         metadata={
+#             "editor": EditorWidgetInfo(
+#                 label="Race",
+#                 widget_factory=functools.partial(EnumComboBox[CharacterRace], enum_class=CharacterRace),
+#                 sig_value_changed="sig_current_enum_changed",
+#                 set_value_method="set_current_enum",
+#             )
+#         },
+#     )
+#     class_name: str = attrs.field(
+#         default="",
+#         metadata={
+#             "editor": EditorWidgetInfo(
+#                 label="Class",
+#                 widget_factory=QtWidgets.QLineEdit,
+#                 sig_value_changed="textEdited",
+#                 set_value_method="setText",
+#                 widget_properties=LineEditProperties(),
+#             ),
+#             "description": "The class of the character.",
+#         }
+#     )
+#     level: int = attrs.field(
+#         default=1,
+#         metadata={
+#             "editor": EditorWidgetInfo(
+#                 label="Level",
+#                 widget_factory=QtWidgets.QSpinBox,
+#                 sig_value_changed="valueChanged",
+#                 set_value_method="setValue",
+#                 widget_properties=SpinBoxProperties(
+#                     minimum=1,
+#                     maximum=20,
+#                 ),
+#             ),
+#             "description": "The level of the character.",
+#         }
+#     )
+    
 
 
 def get_setting_path(inst_or_cls: attrs.AttrsInstance | t.Type[attrs.AttrsInstance], attr: t.Any) -> str:

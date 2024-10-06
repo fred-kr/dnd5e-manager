@@ -20,7 +20,7 @@
    <item>
     <widget class="QStackedWidget" name="stacked_info_page">
      <widget class="QWidget" name="page_database_search">
-      <layout class="QGridLayout" name="gridLayout" columnstretch="0,3,7">
+      <layout class="QGridLayout" name="gridLayout" columnstretch="0,3,7,0">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -33,7 +33,7 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item row="0" column="0" colspan="3">
+       <item row="0" column="0" colspan="4">
         <widget class="BreadcrumbBar" name="bc_bar_item_list" native="true">
          <property name="minimumSize">
           <size>
@@ -43,10 +43,30 @@
          </property>
         </widget>
        </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Category</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="StrongBodyLabel" name="label_3">
          <property name="text">
           <string>Filter</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="combo_box_category">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>31</height>
+          </size>
+         </property>
+         <property name="frame">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -66,10 +86,10 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="2" rowspan="2">
+       <item row="1" column="2" rowspan="3" colspan="2">
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab_description">
           <attribute name="title">
@@ -130,7 +150,7 @@
          </widget>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
+       <item row="3" column="0" colspan="2">
         <widget class="ListView" name="list_view_api">
          <property name="editTriggers">
           <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -190,11 +210,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ListView</class>
-   <extends>QListView</extends>
-   <header>qfluentwidgets</header>
-  </customwidget>
-  <customwidget>
    <class>TreeView</class>
    <extends>QTreeView</extends>
    <header>qfluentwidgets</header>
@@ -202,6 +217,11 @@
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>ListView</class>
+   <extends>QListView</extends>
    <header>qfluentwidgets</header>
   </customwidget>
  </customwidgets>

@@ -1,10 +1,4 @@
-from dnd5e_srd_api.api_interface import (
-    APIReference,
-    EquipmentCategoriesIndex,
-    get,
-    get_item_from_reference,
-    get_items_in_category,
-)
+from dnd5e_srd_api.api_interface import API
 from PySide6 import QtCore, QtWidgets
 
 from ...ui.ui_wiki_interface import Ui_WikiInterface
@@ -16,16 +10,24 @@ class InfoWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.setObjectName("info_widget")
 
+        self.setStyleSheet(
+            "QComboBox { min-width: 150px; min-height: 31px; padding-left: 10px; }"
+            "QComboBox QAbstractItemView::item { min-height: 31px; }"
+        )
         self.ui = Ui_WikiInterface()
         self.ui.setupUi(self)
 
+        self.api = API()
+        self.root_endpoints_model = QtCore.QStringListModel(["Character Data", "Equipment", "Spells"])
+        self.ui.combo_box_category.setModel(self.root_endpoints_model)
+
         self._setup_pivot()
-        self._setup_search()
         self._setup_list_view()
         self._connect_qsignals()
 
     def _connect_qsignals(self) -> None:
-        self.ui.line_edit_filter.textEdited.connect(self.search_equipment)
+        # self.ui.line_edit_filter.textEdited.connect(self.search_resource)
+        self.ui.combo_box_category.currentTextChanged.connect(self.show_endpoint_resources)
 
     def _setup_pivot(self) -> None:
         self.ui.pivot_nav_bar.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
@@ -48,63 +50,71 @@ class InfoWidget(QtWidgets.QWidget):
         widget = self.ui.stacked_info_page.widget(index)
         self.ui.pivot_nav_bar.setCurrentItem(widget.objectName())
 
-    def _setup_search(self) -> None:
-        api_data = get("/api/equipment-categories").json()["results"]
-        ref_list: list[APIReference[EquipmentCategoriesIndex]] = []
-        for api_ref_dict in api_data:
-            idx = EquipmentCategoriesIndex(api_ref_dict["index"])
-            ref_list.append(
-                APIReference(
-                    index=idx,
-                    name=api_ref_dict["name"],
-                    url=api_ref_dict["url"],
-                )
-            )
+    def _setup_list_view(self) -> None:
+        self.ui.list_view_api.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.ui.list_view_api.doubleClicked.connect(self.get_resource_data)
 
-        self.equipment_list = ResourceIndexModel(ref_list)
+    @QtCore.Slot(str)
+    def show_endpoint_resources(self, text: str) -> None:
+        if text == "Character Data":
+            endpoint = self.api.character_data
+        elif text == "Equipment":
+            endpoint = self.api.equipment
+        elif text == "Spells":
+            endpoint = self.api.spells
+        else:
+            return
+        # resource_index = endpoint.get_available_resources()
+        self.resource_index_model = ResourceIndexModel(resource_index)
+        self.ui.list_view_api.setModel(self.resource_index_model)
+
         completer = QtWidgets.QCompleter()
         completer.setCompletionRole(QtCore.Qt.ItemDataRole.DisplayRole)
         completer.setModelSorting(QtWidgets.QCompleter.ModelSorting.CaseInsensitivelySortedModel)
         completer.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
-        completer.setModel(self.equipment_list)
+        completer.setModel(self.resource_index_model)
         self.ui.line_edit_filter.setCompleter(completer)
 
-    def _setup_list_view(self) -> None:
-        self.ui.list_view_api.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.ui.list_view_api.doubleClicked.connect(self.search_for_reference)
-        self.ui.bc_bar_item_list.currentItemChanged.connect(print)
+    # @QtCore.Slot(str)
+    # def search_resource(self, text: str) -> None:
+    #     api_ref = self.
+    #     if not api_ref:
+    #         self.ui.list_view_api.setModel(None)
+    #         self._category_data = None
+    #         return
 
-    @QtCore.Slot(str)
-    def search_equipment(self, text: str) -> None:
-        api_ref = self.equipment_list.item_from_name(text)
-        if not api_ref:
-            self.ui.list_view_api.setModel(None)
-            self._category_data = None
-            return
+    #     category_index = EquipmentCategoriesIndex(api_ref.index)
 
-        category_index = EquipmentCategoriesIndex(api_ref.index)
+    #     category_data = get_items_in_category(category_index)
+    #     if not category_data:
+    #         self.ui.list_view_api.setModel(None)
+    #         self._category_data = None
+    #         return
+    #     self._category_data = category_data
 
-        category_data = get_items_in_category(category_index)
-        if not category_data:
-            self.ui.list_view_api.setModel(None)
-            self._category_data = None
-            return
-        self._category_data = category_data
-
-        self.ui.list_view_api.setModel(ResourceIndexModel(category_data))
+    #     self.ui.list_view_api.setModel(ResourceIndexModel(category_data))
 
     @QtCore.Slot(QtCore.QModelIndex)
-    def search_for_reference(self, index: QtCore.QModelIndex) -> None:
-        if api_ref := self.ui.list_view_api.model().data(index, role=QtCore.Qt.ItemDataRole.UserRole):
-            item_data = get_item_from_reference(api_ref)
+    def get_resource_data(self, index: QtCore.QModelIndex) -> None:
+        cd = self.character_data
+        resource_index = self.resource_index_model.data(index, role=QtCore.Qt.ItemDataRole.UserRole)
+        if isinstance(resource_index, cd.AbilityScores):
+            data = cd.get_ability_score(resource_index)
+        elif isinstance(resource_index, cd.Alignments):
+            data = cd.get_alignment(resource_index)
+        elif isinstance(resource_index, cd.Backgrounds):
+            data = cd.get_background(resource_index)
+        elif isinstance(resource_index, cd.Languages):
+            data = cd.get_language(resource_index)
+        elif isinstance(resource_index, cd.Proficiencies):
+            data = cd.get_proficiency(resource_index)
+        elif isinstance(resource_index, cd.Skills):
+            data = cd.get_skill(resource_index)
+        else:
+            return
 
-            # Markdown description
-            desc_str = "\n\n".join(desc) if (desc := item_data.desc) else "No description available."
-            self.ui.text_browser_search_result.setMarkdown(f"# {item_data.name}\n\n{desc_str}")
+        description = getattr(data, "desc", None)
 
-            # Breadcrumbs
-            url = item_data.url
-            parts = url.removeprefix("/").split("/")
-            self.ui.bc_bar_item_list.clear()
-            for part in parts:
-                self.ui.bc_bar_item_list.addItem(routeKey=part, text=part.title())
+        # Markdown description
+        desc_str = "\n\n".join(description) if isinstance(description, list) else "No description available"
+        self.ui.text_browser_search_result.setMarkdown(f"# {data.name}\n\n{desc_str}")

@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QGridLayout, QHeaderView,
-    QSizePolicy, QStackedWidget, QTabWidget, QTextBrowser,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QGridLayout,
+    QHeaderView, QLabel, QSizePolicy, QStackedWidget,
+    QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
 
 from qfluentwidgets import (BreadcrumbBar, LineEdit, ListView, Pivot,
     StrongBodyLabel, TreeView)
@@ -45,12 +45,24 @@ class Ui_WikiInterface(object):
         self.bc_bar_item_list.setObjectName(u"bc_bar_item_list")
         self.bc_bar_item_list.setMinimumSize(QSize(0, 31))
 
-        self.gridLayout.addWidget(self.bc_bar_item_list, 0, 0, 1, 3)
+        self.gridLayout.addWidget(self.bc_bar_item_list, 0, 0, 1, 4)
+
+        self.label = QLabel(self.page_database_search)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout.addWidget(self.label, 2, 0, 1, 1)
 
         self.label_3 = StrongBodyLabel(self.page_database_search)
         self.label_3.setObjectName(u"label_3")
 
         self.gridLayout.addWidget(self.label_3, 1, 0, 1, 1)
+
+        self.combo_box_category = QComboBox(self.page_database_search)
+        self.combo_box_category.setObjectName(u"combo_box_category")
+        self.combo_box_category.setMinimumSize(QSize(0, 31))
+        self.combo_box_category.setFrame(False)
+
+        self.gridLayout.addWidget(self.combo_box_category, 2, 1, 1, 1)
 
         self.line_edit_filter = LineEdit(self.page_database_search)
         self.line_edit_filter.setObjectName(u"line_edit_filter")
@@ -89,7 +101,7 @@ class Ui_WikiInterface(object):
 
         self.tabWidget.addTab(self.tab_details, "")
 
-        self.gridLayout.addWidget(self.tabWidget, 1, 2, 2, 1)
+        self.gridLayout.addWidget(self.tabWidget, 1, 2, 3, 2)
 
         self.list_view_api = ListView(self.page_database_search)
         self.list_view_api.setObjectName(u"list_view_api")
@@ -98,7 +110,7 @@ class Ui_WikiInterface(object):
         self.list_view_api.setAlternatingRowColors(True)
         self.list_view_api.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
 
-        self.gridLayout.addWidget(self.list_view_api, 2, 0, 1, 2)
+        self.gridLayout.addWidget(self.list_view_api, 3, 0, 1, 2)
 
         self.gridLayout.setColumnStretch(1, 3)
         self.gridLayout.setColumnStretch(2, 7)
@@ -120,7 +132,7 @@ class Ui_WikiInterface(object):
 
         self.retranslateUi(WikiInterface)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(WikiInterface)
@@ -128,6 +140,7 @@ class Ui_WikiInterface(object):
 
     def retranslateUi(self, WikiInterface):
         WikiInterface.setWindowTitle(QCoreApplication.translate("WikiInterface", u"Wiki & Database Search", None))
+        self.label.setText(QCoreApplication.translate("WikiInterface", u"Category", None))
         self.label_3.setText(QCoreApplication.translate("WikiInterface", u"Filter", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_description), QCoreApplication.translate("WikiInterface", u"Description", None))
 #if QT_CONFIG(tooltip)
