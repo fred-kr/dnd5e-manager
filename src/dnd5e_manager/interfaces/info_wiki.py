@@ -2,7 +2,7 @@ from dnd5e_srd_api.api_interface import API
 from PySide6 import QtCore, QtWidgets
 
 from ...ui.ui_wiki_interface import Ui_WikiInterface
-from ..models.resource_index_model import ResourceIndexModel
+from ..models.resource_index_model import APIReferenceListModel
 
 
 class InfoWidget(QtWidgets.QWidget):
@@ -65,7 +65,7 @@ class InfoWidget(QtWidgets.QWidget):
         else:
             return
         # resource_index = endpoint.get_available_resources()
-        self.resource_index_model = ResourceIndexModel(resource_index)
+        self.resource_index_model = APIReferenceListModel(resource_index)
         self.ui.list_view_api.setModel(self.resource_index_model)
 
         completer = QtWidgets.QCompleter()

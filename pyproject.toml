@@ -5,13 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pyside6>=6.7.3",
+    "pyside6>=6.8.0",
     "attrs>=24.2.0",
-    "numpy>=2.1.1",
+    "numpy>=2.1.2",
     "pyside6-fluent-widgets>=1.6.6",
     "requests>=2.32.3",
     "dnd5e-srd-api",
     "pyside-config",
+    "pyside-widgets",
 ]
 
 [build-system]
@@ -24,11 +25,13 @@ dev-dependencies = [
     "pyinstaller>=6.10.0",
     "pyinstaller-hooks-contrib>=2024.8",
     "ipython>=8.28.0",
+    "rich>=13.9.2",
 ]
 
 [tool.uv.sources]
 dnd5e-srd-api = { git = "https://github.com/fred-kr/dnd5e-srd-api.git", branch = "attrs-version" }
 pyside-config = { git = "https://github.com/fred-kr/pyside-config.git" }
+pyside-widgets = { git = "https://github.com/fred-kr/pyside-widgets.git" }
 
 [tool.ruff]
 target-version = "py312"

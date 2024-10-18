@@ -10,13 +10,10 @@ from .config import Config
 from .icons import Icons
 from .widgets.main_window import MainWindow
 
-
+qfw.IndeterminateProgressRing()
 class EquipmentManager(QtWidgets.QApplication):
     def __init__(self, sys_argv: t.Sequence[str]) -> None:
         super().__init__(sys_argv)
-
-        self.setOrganizationName("QuackTech")
-        self.setApplicationName("DnD5e Equipment Manager")
 
         self.mw = MainWindow()
         self._setup_command_bar()
