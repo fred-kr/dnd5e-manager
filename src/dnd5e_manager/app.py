@@ -6,11 +6,12 @@ import qfluentwidgets as qfw
 from PySide6 import QtCore, QtWidgets
 
 from . import type_defs as _t
-from .config import Config
+# from .config import Config
+from .app_config import Config
 from .icons import Icons
 from .widgets.main_window import MainWindow
 
-qfw.IndeterminateProgressRing()
+
 class EquipmentManager(QtWidgets.QApplication):
     def __init__(self, sys_argv: t.Sequence[str]) -> None:
         super().__init__(sys_argv)
@@ -73,12 +74,12 @@ class EquipmentManager(QtWidgets.QApplication):
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self.mw,
             "Save Inventory Sheet",
-            dir=Config().internal.SavesDir,
+            dir=Config.general.saves_dir,
             filter="JSON Files (*.json)",
         )
 
         if filename:
-            Config().internal.SavesDir = Path(filename).parent.as_posix()
+            Config.general.saves_dir = Path(filename).parent.as_posix()
             with open(filename, "w") as file:
                 try:
                     json.dump(
@@ -106,12 +107,12 @@ class EquipmentManager(QtWidgets.QApplication):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self.mw,
             "Open Inventory Sheet",
-            dir=Config().internal.SavesDir,
+            dir=Config.general.saves_dir,
             filter="JSON Files (*.json)",
         )
 
         if filename:
-            Config().internal.SavesDir = Path(filename).parent.as_posix()
+            Config.general.saves_dir = Path(filename).parent.as_posix()
             with open(filename, "r") as file:
                 try:
                     data = json.load(file)

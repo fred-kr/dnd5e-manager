@@ -4,7 +4,7 @@ import typing as t
 import attrs
 
 from .. import type_defs as _t
-from ..config import Config
+from ..app_config import Config
 from ..enum_defs import CurrencyType, ItemWeightFormat
 
 D = decimal.Decimal
@@ -119,7 +119,7 @@ class Item:
 
     @property
     def weight(self) -> decimal.Decimal | int:
-        weight_format = Config().equipment.WeightFormat
+        weight_format = Config.general.weight_display_format
         if weight_format == ItemWeightFormat.POUNDS:
             return self.pounds
         elif weight_format == ItemWeightFormat.SLOTS:
@@ -129,7 +129,7 @@ class Item:
 
     @weight.setter
     def weight(self, value: decimal.Decimal | int) -> None:
-        weight_format = Config().equipment.WeightFormat
+        weight_format = Config.general.weight_display_format
         if weight_format == ItemWeightFormat.POUNDS:
             self.pounds = D(value)
         elif weight_format == ItemWeightFormat.SLOTS:

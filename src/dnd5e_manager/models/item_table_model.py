@@ -4,7 +4,7 @@ import typing as t
 from PySide6 import QtCore
 
 from .. import type_defs as _t
-from ..config import Config
+from ..app_config import Config
 from ..enum_defs import CurrencyType
 from .equipment import Cost, Item
 
@@ -24,7 +24,7 @@ class ItemTableModel(QtCore.QAbstractTableModel):
 
     @property
     def table_header(self) -> tuple[str, str, str, str]:
-        return ("Name", "Category", f"Cost ({self._display_currency})", f"Weight ({Config().equipment.WeightFormat})")
+        return ("Name", "Category", f"Cost ({self._display_currency})", f"Weight ({Config.general.weight_display_format})")
 
     def set_display_currency(self, currency: CurrencyType) -> None:
         self._display_currency = currency

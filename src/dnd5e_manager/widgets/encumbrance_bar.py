@@ -1,7 +1,7 @@
 import qfluentwidgets as qfw
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..config import Config
+from ..app_config import Config
 from ..enum_defs import CreatureSize, EncumbranceStatus, SVGColors
 
 
@@ -37,12 +37,11 @@ class EncumbranceBar(QtWidgets.QFrame):
 
     @property
     def max_slots(self) -> int:
-        return Config().character.Strength * 3
+        return Config.general.character_strength * 3
 
     def get_encumbrance_status(self, slots_used: int) -> EncumbranceStatus:
-        config = Config()
-        curr_str = config.character.Strength
-        creature_size = config.character.Size
+        curr_str = Config.general.character_strength
+        creature_size = Config.general.character_size
 
         # TODO: Implement the logic for size modifiers
         if creature_size >= CreatureSize.LARGE:

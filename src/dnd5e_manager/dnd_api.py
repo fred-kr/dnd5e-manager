@@ -2,11 +2,11 @@ import enum
 
 import requests
 
-from .config import Config
+from .app_config import Config
 
 
 class DBInterface:
-    _base_url = Config().database.BaseURL
+    _base_url = Config.database.base_url
     _headers = {"Accept": "application/json"}
 
     class Endpoint(enum.Enum):

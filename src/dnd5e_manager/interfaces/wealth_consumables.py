@@ -6,7 +6,7 @@ from ..enum_defs import Coin
 
 from ...ui.ui_wealth_consumables_tracker import Ui_WealthConsumablesTracker
 from .. import type_defs as _t
-from ..config import Config
+from ..app_config import Config
 
 if t.TYPE_CHECKING:
     from ..widgets.slot_spin_box import SlotDoubleSpinBox, SlotSpinBox
@@ -76,20 +76,19 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
             widget.valueChanged.connect(lambda: self.refresh_wealth())
 
     def set_amount_per_slot(self) -> None:
-        conf = Config()
-        self.ui.n_torches.amount_per_slot = conf.consumables.TorchesPerSlot
-        self.ui.n_oil_flasks.amount_per_slot = conf.consumables.OilFlasksPerSlot
-        self.ui.n_rations.amount_per_slot = conf.consumables.RationsPerSlot
-        self.ui.n_waterskins.amount_per_slot = conf.consumables.WaterskinsPerSlot
-        self.ui.n_jugs.amount_per_slot = conf.consumables.JugsPerSlot
-        self.ui.n_daggers.amount_per_slot = conf.consumables.DaggersPerSlot
-        self.ui.n_arrows.amount_per_slot = conf.consumables.ArrowsPerSlot
-        self.ui.n_bolts.amount_per_slot = conf.consumables.BoltsPerSlot
-        self.ui.n_darts.amount_per_slot = conf.consumables.DartsPerSlot
-        self.ui.n_bullets.amount_per_slot = conf.consumables.BulletsPerSlot
-        self.ui.n_needles.amount_per_slot = conf.consumables.NeedlesPerSlot
+        self.ui.n_torches.amount_per_slot = Config.amount_per_slot.torches
+        self.ui.n_oil_flasks.amount_per_slot = Config.amount_per_slot.oil_flasks
+        self.ui.n_rations.amount_per_slot = Config.amount_per_slot.rations
+        self.ui.n_waterskins.amount_per_slot = Config.amount_per_slot.waterskins
+        self.ui.n_jugs.amount_per_slot = Config.amount_per_slot.jugs
+        self.ui.n_daggers.amount_per_slot = Config.amount_per_slot.daggers
+        self.ui.n_arrows.amount_per_slot = Config.amount_per_slot.arrows
+        self.ui.n_bolts.amount_per_slot = Config.amount_per_slot.bolts
+        self.ui.n_darts.amount_per_slot = Config.amount_per_slot.darts
+        self.ui.n_bullets.amount_per_slot = Config.amount_per_slot.bullets
+        self.ui.n_needles.amount_per_slot = Config.amount_per_slot.needles
 
-        self.ui.n_total.amount_per_slot = conf.equipment.CoinsGemsPerSlot
+        self.ui.n_total.amount_per_slot = Config.amount_per_slot.coins_gems
 
     @QtCore.Slot()
     def clear_wealth(self) -> None:
@@ -112,7 +111,7 @@ class WealthConsumablesInterface(QtWidgets.QWidget):
 
         n_total = n_gems + n_platinum + n_gold + n_electrum + n_silver + n_copper
 
-        gp_gems = n_gems * Config().equipment.GoldPerGem
+        gp_gems = n_gems * Config.general.gold_per_gem
         gp_platinum = n_platinum * Coin.PLATINUM.gold_exchange_rate
         gp_gold = n_gold
         gp_electrum = n_electrum * Coin.ELECTRUM.gold_exchange_rate

@@ -1,6 +1,9 @@
+import decimal
 import math
 
 from PySide6 import QtCore, QtWidgets
+
+D = decimal.Decimal
 
 
 class SlotSpinBox(QtWidgets.QSpinBox):
@@ -13,11 +16,11 @@ class SlotSpinBox(QtWidgets.QSpinBox):
         self.valueChanged.connect(lambda: self.update_suffix())
 
     @property
-    def amount_per_slot(self) -> int | float:
+    def amount_per_slot(self) -> int | float | decimal.Decimal:
         return self._amount_per_slot
 
     @amount_per_slot.setter
-    def amount_per_slot(self, amount: int | float) -> None:
+    def amount_per_slot(self, amount: int | float | decimal.Decimal) -> None:
         self._amount_per_slot = amount
         self.update_suffix()
 
@@ -42,17 +45,17 @@ class SlotDoubleSpinBox(QtWidgets.QDoubleSpinBox):
         self.valueChanged.connect(lambda: self.update_suffix())
 
     @property
-    def amount_per_slot(self) -> int | float:
+    def amount_per_slot(self) -> int | float | decimal.Decimal:
         return self._amount_per_slot
 
     @amount_per_slot.setter
-    def amount_per_slot(self, amount: int | float) -> None:
+    def amount_per_slot(self, amount: int | float | decimal.Decimal) -> None:
         self._amount_per_slot = amount
         self.update_suffix()
 
     @property
     def slots(self) -> int:
-        return math.ceil(self.value() / self._amount_per_slot)
+        return math.ceil(D(self.value()) / D(self._amount_per_slot))
 
     @QtCore.Slot()
     def update_suffix(self) -> None:
